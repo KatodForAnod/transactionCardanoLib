@@ -10,7 +10,7 @@ type Config struct {
 	TokenName              string `json:"token_name"`
 	TokenAmount            int64  `json:"token_amount"`
 	PaymentAddress         string `json:"payment_address"`
-	UsingExistingPolicy    string `json:"using_existing_policy"`
+	UsingExistingPolicy    bool   `json:"using_existing_policy"`
 	PolicyScriptFilePath   string `json:"policy_script_file_path"`
 	PolicySigningFilePath  string `json:"policy_signing_file_path"`
 	PolicyVerificationPath string `json:"policy_verification_path"`

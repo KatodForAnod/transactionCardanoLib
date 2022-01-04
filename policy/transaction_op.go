@@ -47,3 +47,17 @@ func TransactionBuild(fee, txHash, txIx, address, output, tokenAmount,
 
 	return nil
 }
+
+const transactionPreBuildTmpl = "cardano-cli query utxo --address %s --testnet-magic %s"
+
+func TransactionPreBuild(address, id string) (cliOutput string, err error) {
+	comm := fmt.Sprintf(transactionPreBuildTmpl, address, id)
+
+	out, err := exec.Command(comm).Output()
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	return string(out), nil
+}

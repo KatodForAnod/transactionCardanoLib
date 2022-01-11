@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"transactionCardanoLib/dto"
+	"transactionCardanoLib/config"
 )
 
 const transactionSignTmpl = "cardano-cli transaction sign " +
@@ -14,8 +14,8 @@ const transactionSignTmpl = "cardano-cli transaction sign " +
 	"--tx-body-file matx.raw  " +
 	"--out-file matx.signed"
 
-func TransactionSign(id string, tokenStruct dto.TokenStruct) error {
-	comm := fmt.Sprintf(transactionSignTmpl, tokenStruct.PolicySigningFilePath, id)
+func TransactionSign(id string, token config.Config) error {
+	comm := fmt.Sprintf(transactionSignTmpl, token.Token.PolicySigningFilePath, id)
 
 	err := exec.Command(comm).Run()
 	if err != nil {

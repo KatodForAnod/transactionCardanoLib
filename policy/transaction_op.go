@@ -11,8 +11,8 @@ const transactionSignTmpl = "cardano-cli transaction sign " +
 	"--signing-key-file payment.skey  " +
 	"--signing-key-file %s " +
 	"--testnet-magic %s " +
-	"--tx-body-file matx.raw  " +
-	"--out-file matx.signed"
+	"--tx-body-file " + RawTransactionFile + " " +
+	"--out-file " + SignedTransactionFile
 
 func TransactionSign(id string, token config.TokenStruct) error {
 	comm := fmt.Sprintf(transactionSignTmpl, token.PolicySigningFilePath, id)
@@ -32,7 +32,7 @@ const transactionBuildTmpl = "cardano-cli transaction build-raw " +
 	"--tx-out $%s+$%s+\"$%s $%s + $%s $%s\" " +
 	"--mint=\"$%s $%s + $%s $%s\" " +
 	"--minting-script-file %s " +
-	"--out-file matx.raw"
+	"--out-file " + RawTransactionFile
 
 func TransactionBuild(fee, txHash, txIx, address, output, tokenAmount,
 	tokenName1, tokenName2, policyScriptFilePath string) error {
@@ -61,3 +61,7 @@ func TransactionPreBuild(address, id string) (cliOutput string, err error) {
 
 	return string(out), nil
 }
+
+/*func base16Encode(input string)(string, error) {
+
+}*/

@@ -22,6 +22,7 @@ const (
 )
 
 func (f Frontend) Start(conf config.Config) error {
+	f.conf = conf
 	fmt.Print(startMsg)
 
 	for {
@@ -45,13 +46,7 @@ func (f Frontend) Start(conf config.Config) error {
 func (f Frontend) switcher(command int) error {
 	switch command {
 	case buildTransaction:
-		fmt.Println("write fee, txHash, txIx, output, tokenAmount, tokenName1, tokenName2")
-		var fee, thHash, txIx, output, tokenName1, tokenName2 string
-		err := policy.TransactionBuild(fee, thHash, txIx, f.conf.Token.PaymentAddress, output,
-			strconv.FormatInt(f.conf.Token.TokenAmount, 10),
-			tokenName1, tokenName2, f.conf.Token.PolicySigningFilePath)
-
-		if err != nil {
+		if err := f.buildTransaction(); err != nil {
 			log.Println(err)
 			return err
 		}
@@ -67,6 +62,57 @@ func (f Frontend) switcher(command int) error {
 		}
 	default:
 		fmt.Println("unsupported command")
+	}
+
+	return nil
+}
+
+func (f Frontend) buildTransaction() error {
+	var fee, txHash, txIx, output, tokenName1, tokenName2, tokenAmount string
+
+	fmt.Println("write fee")
+	if _, err := fmt.Scan(&tokenName1); err != nil {
+		log.Println(err)
+		return err
+	}
+	fmt.Println("write txHash")
+	if _, err := fmt.Scan(&tokenName1); err != nil {
+		log.Println(err)
+		return err
+	}
+	fmt.Println("write txIx")
+	if _, err := fmt.Scan(&tokenName1); err != nil {
+		log.Println(err)
+		return err
+	}
+	fmt.Println("write output")
+	if _, err := fmt.Scan(&tokenName1); err != nil {
+		log.Println(err)
+		return err
+	}
+	fmt.Println("write tokenName1")
+	if _, err := fmt.Scan(&tokenName1); err != nil {
+		log.Println(err)
+		return err
+	}
+	fmt.Println("write tokenName2")
+	if _, err := fmt.Scan(&tokenName1); err != nil {
+		log.Println(err)
+		return err
+	}
+	fmt.Println("write tokenAmount")
+	if _, err := fmt.Scan(&tokenAmount); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err := policy.TransactionBuild(fee, txHash, txIx, f.conf.Token.PaymentAddress, output,
+		strconv.FormatInt(f.conf.Token.TokenAmount, 10), // tokenAmount ???
+		tokenName1, tokenName2, f.conf.Token.PolicySigningFilePath)
+
+	if err != nil {
+		log.Println(err)
+		return err
 	}
 
 	return nil

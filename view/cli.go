@@ -5,7 +5,6 @@ import (
 	"log"
 	"strconv"
 	"transactionCardanoLib/config"
-	"transactionCardanoLib/dto"
 	"transactionCardanoLib/policy"
 )
 
@@ -48,8 +47,9 @@ func (f Frontend) switcher(command int) error {
 	case buildTransaction:
 		fmt.Println("write fee, txHash, txIx, output, tokenAmount, tokenName1, tokenName2")
 		var fee, thHash, txIx, output, tokenName1, tokenName2 string
-		err := policy.TransactionBuild(fee, thHash, txIx, f.conf.PaymentAddress, output,
-			strconv.FormatInt(f.conf.TokenAmount, 10), tokenName1, tokenName2, f.conf.PolicySigningFilePath)
+		err := policy.TransactionBuild(fee, thHash, txIx, f.conf.Token.PaymentAddress, output,
+			strconv.FormatInt(f.conf.Token.TokenAmount, 10),
+			tokenName1, tokenName2, f.conf.Token.PolicySigningFilePath)
 
 		if err != nil {
 			log.Println(err)
@@ -58,7 +58,7 @@ func (f Frontend) switcher(command int) error {
 	case signTransaction:
 		fmt.Println("input id")
 		var id string
-		var obj dto.TokenStruct ///
+		var obj config.TokenStruct
 
 		err := policy.TransactionSign(id, obj)
 		if err != nil {

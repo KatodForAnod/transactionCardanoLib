@@ -14,8 +14,8 @@ const transactionSignTmpl = "cardano-cli transaction sign " +
 	"--tx-body-file matx.raw  " +
 	"--out-file matx.signed"
 
-func TransactionSign(id string, token config.Config) error {
-	comm := fmt.Sprintf(transactionSignTmpl, token.Token.PolicySigningFilePath, id)
+func TransactionSign(id string, token config.TokenStruct) error {
+	comm := fmt.Sprintf(transactionSignTmpl, token.PolicySigningFilePath, id)
 
 	err := exec.Command(comm).Run()
 	if err != nil {

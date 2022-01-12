@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"transactionCardanoLib/cardanocli"
 	"transactionCardanoLib/config"
-	"transactionCardanoLib/policy"
 )
 
 type Frontend struct {
@@ -55,7 +55,7 @@ func (f Frontend) switcher(command int) error {
 		var id string
 		var obj config.TokenStruct
 
-		err := policy.TransactionSign(id, obj)
+		err := cardanocli.TransactionSign(id, obj)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -106,7 +106,7 @@ func (f Frontend) buildTransaction() error {
 		return err
 	}
 
-	err := policy.TransactionBuild(fee, txHash, txIx, f.conf.Token.PaymentAddress, output,
+	err := cardanocli.TransactionBuild(fee, txHash, txIx, f.conf.Token.PaymentAddress, output,
 		strconv.FormatInt(f.conf.Token.TokenAmount, 10), // tokenAmount ???
 		tokenName1, tokenName2, f.conf.Token.PolicySigningFilePath)
 

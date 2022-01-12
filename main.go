@@ -3,8 +3,8 @@ package main
 import (
 	"io/ioutil"
 	"log"
+	"transactionCardanoLib/cardanocli"
 	"transactionCardanoLib/config"
-	"transactionCardanoLib/policy"
 	"transactionCardanoLib/view"
 )
 
@@ -17,7 +17,7 @@ func main() {
 
 	token := conf.Token
 	if !token.UsingExistingPolicy {
-		_, _, paymentAddrFileName, err := policy.GeneratePaymentAddr(conf.Token.ID)
+		_, _, paymentAddrFileName, err := cardanocli.GeneratePaymentAddr(conf.Token.ID)
 		if err != nil {
 			log.Println(err)
 			panic(2)
@@ -33,7 +33,7 @@ func main() {
 		token.PolicyVerificationFilePath,
 			token.PolicySigningFilePath,
 			token.PolicyScriptFilePath,
-			err = policy.GeneratePolicy()
+			err = cardanocli.GeneratePolicy()
 		if err != nil {
 			log.Println(err)
 			panic(4)

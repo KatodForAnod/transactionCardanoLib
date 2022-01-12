@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"transactionCardanoLib/config"
 	"transactionCardanoLib/policy"
 )
@@ -11,13 +12,19 @@ func main() {
 		panic(1)
 	}
 
-	if !conf.Token.UsingExistingPolicy {
-		addr, err := policy.GeneratePaymentAddr(conf.Token.ID)
+	token := conf.Token
+	if !token.UsingExistingPolicy {
+		_, _, paymentAddrFileName, err := policy.GeneratePaymentAddr(conf.Token.ID)
 		if err != nil {
 			panic(2)
 		}
 
-		conf.Token.PaymentAddress = addr
+		fileContent, err := ioutil.ReadFile(paymentAddrFileName)
+		if err != nil {
+			panic(3)
+		}
+
+		token.PaymentAddress = string(fileContent)
 	}
 
 }

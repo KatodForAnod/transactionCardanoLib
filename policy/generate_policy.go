@@ -14,28 +14,29 @@ const keyGenCardano = "cardano-cli address key-gen " +
 
 const addressBuildCardano = "cardano-cli address build " +
 	"--payment-verification-key-file " + PaymentVerifyKeyFile + " " +
-	"--out-file %s --testnet-magic %s"
+	"--out-file " + PaymentAddrFile + " --testnet-magic %s"
 
-func GeneratePaymentAddr(id string) (string, error) {
-	err := exec.Command(keyGenCardano).Run()
+func GeneratePaymentAddr(id string) (verifyFile string, signFile string,
+	paymentAddrFile string, err error) {
+	err = exec.Command(keyGenCardano).Run()
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return "", "", "", err
 	}
 
-	err = exec.Command(fmt.Sprintf(addressBuildCardano, PaymentAddrFile, id)).Run()
+	err = exec.Command(fmt.Sprintf(addressBuildCardano, id)).Run()
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return "", "", "", err
 	}
 
-	fileContent, err := ioutil.ReadFile(PaymentAddrFile)
+	/*fileContent, err := ioutil.ReadFile(PaymentAddrFile)
 	if err != nil {
 		log.Println(err)
-		return "", err
-	}
+		return "", "", "", err
+	}*/
 
-	return string(fileContent), nil
+	return PaymentVerifyKeyFile, PaymentSignKeyFile, PaymentAddrFile, nil
 }
 
 const (

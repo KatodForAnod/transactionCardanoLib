@@ -7,7 +7,7 @@ import (
 
 // Config - structure of config file
 type Config struct {
-	Token TokenStruct `json:"-"`
+	Token TokenStruct `json:"token"`
 }
 
 type TokenStruct struct {

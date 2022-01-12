@@ -41,7 +41,7 @@ const (
 )
 
 func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
-	if err = os.Mkdir(PolicyDirName, 0755); err != nil {
+	if err = os.Mkdir("./"+PolicyDirName, os.ModePerm); err != nil {
 		log.Println(err)
 		return
 	}

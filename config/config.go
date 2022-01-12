@@ -11,6 +11,7 @@ type Config struct {
 }
 
 type TokenStruct struct {
+	ID                         string `json:"id"`
 	TokenName                  string `json:"token_name"`
 	TokenAmount                int64  `json:"token_amount"`
 	PaymentAddress             string `json:"payment_address"`

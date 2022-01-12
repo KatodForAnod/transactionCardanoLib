@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile)
 	conf, err := config.LoadConfig()
 	if err != nil {
 		panic(1)

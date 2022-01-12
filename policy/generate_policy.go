@@ -8,23 +8,17 @@ import (
 	"os/exec"
 )
 
-const keyGenCardano = "cardano-cli address key-gen " +
-	"--verification-key-file " + PaymentVerifyKeyFile + " " +
-	"--signing-key-file " + PaymentSignKeyFile
-
-const addressBuildCardano = "cardano-cli address build " +
-	"--payment-verification-key-file " + PaymentVerifyKeyFile + " " +
-	"--out-file " + PaymentAddrFile + " --testnet-magic %s"
-
 func GeneratePaymentAddr(id string) (verifyFile, signFile,
 	paymentAddrFile string, err error) {
-	err = exec.Command(keyGenCardano).Run()
+	err = exec.Command("cardano-cli", "address", "key-gen",
+		"--verification-key-file", PaymentVerifyKeyFile, "--signing-key-file", PaymentSignKeyFile).Run()
 	if err != nil {
 		log.Println(err)
 		return "", "", "", err
 	}
 
-	err = exec.Command(fmt.Sprintf(addressBuildCardano, id)).Run()
+	err = exec.Command("cardano-cli", "address", "build", "--payment-verification-key-file",
+		PaymentVerifyKeyFile, "--out-file", PaymentAddrFile, "--testnet-magic", id).Run()
 	if err != nil {
 		log.Println(err)
 		return "", "", "", err
@@ -44,13 +38,6 @@ const (
 		"\"keyHash\": \"%s\"," +
 		"\"type\": \"sig\"," +
 		"}"
-
-	keyGenPolicy = "cardano-cli address key-gen " +
-		"--verification-key-file %s" +
-		"--signing-key-file %s"
-
-	keyHashGen = "cardano-cli address key-hash " +
-		"--payment-verification-key-file %s"
 )
 
 func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
@@ -58,14 +45,15 @@ func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
 		log.Println(err)
 		return
 	}
-	err = exec.Command(fmt.Sprintf(keyGenPolicy, PolicyVerificationkeyFile,
-		PolicySigningKeyFile)).Run()
+	err = exec.Command("cardano-cli", "address", "key-gen", "--verification-key-file",
+		PolicyVerificationkeyFile, "--signing-key-file", PolicySigningKeyFile).Run()
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	err = exec.Command(fmt.Sprintf(keyHashGen, PolicyVerificationkeyFile)).Run()
+	err = exec.Command("cardano-cli", "address", "key-hash",
+		"--payment-verification-key-file", PolicyVerificationkeyFile).Run()
 	if err != nil {
 		log.Println(err)
 		return
@@ -97,7 +85,7 @@ const policyIdGen = "cardano-cli transaction policyid" +
 
 func GeneratePolicyID() (*os.File, error) {
 	err := exec.Command("cardano-cli transaction policyid" +
-		" --script-file ./policy/policy.script >> policy/policyID").Run()
+		" --script-file ./policy/policy.script >> policy/policyID").Run() // Not checked
 	if err != nil {
 		log.Println(err)
 		return nil, err

@@ -1,6 +1,7 @@
 package view
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"strconv"
@@ -105,6 +106,9 @@ func (f Frontend) buildTransaction() error {
 		log.Println(err)
 		return err
 	}
+
+	tokenName1 = hex.EncodeToString([]byte(tokenName1))
+	tokenName2 = hex.EncodeToString([]byte(tokenName2))
 
 	err := cardanocli.TransactionBuild(fee, txHash, txIx, f.conf.Token.PaymentAddress, output,
 		strconv.FormatInt(f.conf.Token.TokenAmount, 10), // tokenAmount ???

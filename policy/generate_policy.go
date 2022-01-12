@@ -16,7 +16,7 @@ const addressBuildCardano = "cardano-cli address build " +
 	"--payment-verification-key-file " + PaymentVerifyKeyFile + " " +
 	"--out-file " + PaymentAddrFile + " --testnet-magic %s"
 
-func GeneratePaymentAddr(id string) (verifyFile string, signFile string,
+func GeneratePaymentAddr(id string) (verifyFile, signFile,
 	paymentAddrFile string, err error) {
 	err = exec.Command(keyGenCardano).Run()
 	if err != nil {
@@ -53,19 +53,19 @@ const (
 		"--payment-verification-key-file %s"
 )
 
-func GeneratePolicy() (err error) {
+func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
 	if err := os.Mkdir(PolicyDirName, 0755); err != nil {
 		log.Println(err)
 		return
 	}
-	err = exec.Command(fmt.Sprintf(keyGenPolicy, PaymentVerifyKeyFile,
-		PaymentSignKeyFile)).Run()
+	err = exec.Command(fmt.Sprintf(keyGenPolicy, PolicyVerificationkeyFile,
+		PolicySigningKeyFile)).Run()
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	err = exec.Command(fmt.Sprintf(keyHashGen, PaymentVerifyKeyFile)).Run()
+	err = exec.Command(fmt.Sprintf(keyHashGen, PolicyVerificationkeyFile)).Run()
 	if err != nil {
 		log.Println(err)
 		return
@@ -89,7 +89,7 @@ func GeneratePolicy() (err error) {
 		return
 	}
 
-	return nil
+	return PolicyVerificationkeyFile, PolicySigningKeyFile, PolicyScriptFile, nil
 }
 
 const policyIdGen = "cardano-cli transaction policyid" +

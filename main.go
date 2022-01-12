@@ -23,8 +23,15 @@ func main() {
 		if err != nil {
 			panic(3)
 		}
-
 		token.PaymentAddress = string(fileContent)
+
+		token.PolicyVerificationFilePath,
+			token.PolicySigningFilePath,
+			token.PolicyScriptFilePath,
+			err = policy.GeneratePolicy()
+		if err != nil {
+			panic(4)
+		}
 	}
 
 }

@@ -2,8 +2,10 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"transactionCardanoLib/config"
 	"transactionCardanoLib/policy"
+	"transactionCardanoLib/view"
 )
 
 func main() {
@@ -16,11 +18,13 @@ func main() {
 	if !token.UsingExistingPolicy {
 		_, _, paymentAddrFileName, err := policy.GeneratePaymentAddr(conf.Token.ID)
 		if err != nil {
+			log.Println(err)
 			panic(2)
 		}
 
 		fileContent, err := ioutil.ReadFile(paymentAddrFileName)
 		if err != nil {
+			log.Println(err)
 			panic(3)
 		}
 		token.PaymentAddress = string(fileContent)
@@ -30,8 +34,11 @@ func main() {
 			token.PolicyScriptFilePath,
 			err = policy.GeneratePolicy()
 		if err != nil {
+			log.Println(err)
 			panic(4)
 		}
 	}
 
+	front := view.Frontend{}
+	front.Start(conf)
 }

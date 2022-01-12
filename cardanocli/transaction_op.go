@@ -15,9 +15,11 @@ const transactionSignTmpl = "cardano-cli transaction sign " +
 	"--out-file " + SignedTransactionFile
 
 func TransactionSign(id string, token config.TokenStruct) error {
-	comm := fmt.Sprintf(transactionSignTmpl, token.PolicySigningFilePath, id)
+	//comm := fmt.Sprintf(transactionSignTmpl, token.PolicySigningFilePath, id)
 
-	err := exec.Command(comm).Run()
+	err := exec.Command("cardano-cli", "transaction", "sign", "--signing-key-file",
+		PaymentSignKeyFile, "-signing-key-file", token.PolicySigningFilePath,
+		"--testnet-magic", id, "--tx-body-file", RawTransactionFile, "--out-file", SignedTransactionFile).Run()
 	if err != nil {
 		log.Println(err)
 		return err
@@ -34,12 +36,19 @@ const transactionBuildTmpl = "cardano-cli transaction build-raw " +
 	"--minting-script-file %s " +
 	"--out-file " + RawTransactionFile
 
+// TransactionBuild - tokenName1 and tokenName2 must be in base16
 func TransactionBuild(fee, txHash, txIx, address, output, tokenAmount,
 	tokenName1, tokenName2, policyScriptFilePath string) error {
-	comm := fmt.Sprintf(transactionBuildTmpl, fee, txHash, txIx, address, output, tokenAmount, tokenName1,
-		tokenAmount, tokenName2, tokenAmount, tokenName1, tokenAmount, tokenName2, policyScriptFilePath)
+	/*comm := fmt.Sprintf(transactionBuildTmpl, fee, txHash, txIx, address, output, tokenAmount, tokenName1,
+	tokenAmount, tokenName2, tokenAmount, tokenName1, tokenAmount, tokenName2, policyScriptFilePath)*/
+	txOut := fmt.Sprintf("$%s+$%s+\"$%s $%s + $%s $%s\"", address, output, tokenAmount, tokenName1,
+		tokenAmount, tokenName2)
+	mint := fmt.Sprintf("$%s $%s + $%s $%s", tokenAmount, tokenName1, tokenAmount, tokenName2)
 
-	err := exec.Command(comm).Run()
+	err := exec.Command("cardano-cli", "transaction", "build-raw",
+		"--fee", fee, "--tx-in", txHash, "--tx-out", txOut, "--mint=", mint,
+		"--minting-script-file", policyScriptFilePath,
+		"--out-file", RawTransactionFile).Run()
 	if err != nil {
 		log.Println(err)
 		return err

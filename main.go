@@ -28,11 +28,11 @@ func main() {
 			log.Println(err)
 			panic(3)
 		}
-		token.PaymentAddress = string(fileContent)
+		conf.Token.PaymentAddress = string(fileContent)
 
-		token.PolicyVerificationFilePath,
-			token.PolicySigningFilePath,
-			token.PolicyScriptFilePath,
+		conf.Token.PolicyVerificationFilePath,
+			conf.Token.PolicySigningFilePath,
+			conf.Token.PolicyScriptFilePath,
 			err = cardanocli.GeneratePolicy()
 		if err != nil {
 			log.Println(err)

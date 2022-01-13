@@ -72,22 +72,22 @@ func (f Frontend) buildTransaction() error {
 	var fee, txHash, txIx, output, tokenName1, tokenName2, tokenAmount string
 
 	fmt.Println("write fee")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&fee); err != nil {
 		log.Println(err)
 		return err
 	}
 	fmt.Println("write txHash")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&txHash); err != nil {
 		log.Println(err)
 		return err
 	}
 	fmt.Println("write txIx")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&txIx); err != nil {
 		log.Println(err)
 		return err
 	}
 	fmt.Println("write output")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&output); err != nil {
 		log.Println(err)
 		return err
 	}

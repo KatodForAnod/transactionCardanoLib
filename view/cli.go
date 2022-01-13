@@ -97,7 +97,7 @@ func (f Frontend) buildTransaction() error {
 		return err
 	}
 	fmt.Println("write tokenName2")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&tokenName2); err != nil {
 		log.Println(err)
 		return err
 	}

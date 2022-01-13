@@ -36,7 +36,7 @@ func GeneratePaymentAddr(id string) (verifyFile, signFile,
 const (
 	scriptContent = "{\n" +
 		"\"keyHash\": \"%s\"," +
-		"\"type\": \"sig\"," +
+		"\"type\": \"sig\"" +
 		"}"
 )
 

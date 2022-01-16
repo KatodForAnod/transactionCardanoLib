@@ -39,11 +39,18 @@ func main() {
 			panic(4)
 		}
 
-		_, err = cardanocli.GeneratePolicyID()
+		policyIDFilePath, err := cardanocli.GeneratePolicyID()
 		if err != nil {
 			log.Println(err)
 			panic(5)
 		}
+
+		fileContent, err = ioutil.ReadFile(policyIDFilePath)
+		if err != nil {
+			log.Println(err)
+			panic(6)
+		}
+		conf.Token.PolicyID = string(fileContent)
 	}
 
 	front := view.Frontend{}

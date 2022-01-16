@@ -1,9 +1,7 @@
 package cardanocli
 
 import (
-	"bufio"
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -63,12 +61,23 @@ func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
 	keyHash := strings.ReplaceAll(buf.String(), "\n", "")
 	policyScript.WriteString(keyHash + "\",\n")
 	policyScript.WriteString("  \"type\": \"sig\"\n")
-	policyScript.WriteString("}\n")
+	policyScript.WriteString("}")
 
 	return PolicyVerificationkeyFile, PolicySigningKeyFile, PolicyScriptFile, nil
 }
 
 func GeneratePolicyID() (string, error) {
+	if err := os.MkdirAll("./"+PolicyDirName, os.ModePerm); err != nil {
+		log.Println(err)
+		return PolicyIDFile, err
+	}
+	err := exec.Command("cardano-cli", "address", "key-gen", "--verification-key-file",
+		PolicyVerificationkeyFile, "--signing-key-file", PolicySigningKeyFile).Run()
+	if err != nil {
+		log.Println(err)
+		return PolicyIDFile, err
+	}
+
 	policyIdFile, err := os.Create(PolicyIDFile)
 	if err != nil {
 		log.Println(err)
@@ -76,19 +85,16 @@ func GeneratePolicyID() (string, error) {
 	}
 	defer policyIdFile.Close()
 
+	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "transaction", "policyid",
 		"--script-file", "./policy/policy.script")
-	cmd.Stdout = policyIdFile
-	stderr, _ := cmd.StderrPipe()
+	cmd.Stdout = &buf
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
 	cmd.Wait()
 
-	scanner := bufio.NewScanner(stderr)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
+	policyIdFile.WriteString(strings.ReplaceAll(buf.String(), "\n", ""))
 
 	return PolicyIDFile, nil
 }

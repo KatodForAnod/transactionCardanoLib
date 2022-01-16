@@ -38,6 +38,12 @@ func main() {
 			log.Println(err)
 			panic(4)
 		}
+
+		_, err = cardanocli.GeneratePolicyID()
+		if err != nil {
+			log.Println(err)
+			panic(5)
+		}
 	}
 
 	front := view.Frontend{}

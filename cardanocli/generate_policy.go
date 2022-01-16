@@ -68,28 +68,27 @@ func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
 	return PolicyVerificationkeyFile, PolicySigningKeyFile, PolicyScriptFile, nil
 }
 
-const policyIdGen = "cardano-cli transaction policyid" +
-	" --script-file ./" + PolicyScriptFile + ">> " + PolicyIDFile
+func GeneratePolicyID() (string, error) {
+	policyIdFile, err := os.Create(PolicyIDFile)
+	if err != nil {
+		log.Println(err)
+		return PolicyIDFile, err
+	}
+	defer policyIdFile.Close()
 
-func GeneratePolicyID() (*os.File, error) {
 	cmd := exec.Command("cardano-cli", "transaction", "policyid",
 		"--script-file", "./policy/policy.script")
+	cmd.Stdout = policyIdFile
 	stderr, _ := cmd.StderrPipe()
-
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
+	cmd.Wait()
 
 	scanner := bufio.NewScanner(stderr)
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
 	}
 
-	file, err := os.Open(PolicyIDFile)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	return file, nil
+	return PolicyIDFile, nil
 }

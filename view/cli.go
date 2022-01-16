@@ -112,7 +112,7 @@ func (f Frontend) buildTransaction() error {
 
 	err := cardanocli.TransactionBuild(fee, txHash, txIx, f.conf.Token.PaymentAddress, output,
 		strconv.FormatInt(f.conf.Token.TokenAmount, 10), // tokenAmount ???
-		tokenName1, tokenName2, f.conf.Token.PolicySigningFilePath)
+		tokenName1, tokenName2, f.conf.Token.PolicyID, f.conf.Token.PolicySigningFilePath)
 
 	if err != nil {
 		log.Println(err)

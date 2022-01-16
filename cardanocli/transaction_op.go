@@ -1,9 +1,12 @@
 package cardanocli
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os/exec"
+	"strconv"
+	"strings"
 	"transactionCardanoLib/config"
 )
 
@@ -18,13 +21,13 @@ func TransactionSign(id string, token config.TokenStruct) error {
 	//comm := fmt.Sprintf(transactionSignTmpl, token.PolicySigningFilePath, id)
 
 	err := exec.Command("cardano-cli", "transaction", "sign", "--signing-key-file",
-		PaymentSignKeyFile, "-signing-key-file", token.PolicySigningFilePath,
-		"--testnet-magic", id, "--tx-body-file", RawTransactionFile, "--out-file", SignedTransactionFile).Run()
+		PaymentSignKeyFile, "--signing-key-file", token.PolicySigningFilePath,
+		"--testnet-magic", strconv.Itoa(1097911063), "--tx-body-file", RawTransactionFile, "--out-file", SignedTransactionFile).Run()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-
+	// get error msg
 	return nil
 }
 
@@ -38,20 +41,28 @@ const transactionBuildTmpl = "cardano-cli transaction build-raw " +
 
 // TransactionBuild - tokenName1 and tokenName2 must be in base16
 func TransactionBuild(fee, txHash, txIx, address, output, tokenAmount,
-	tokenName1, tokenName2, policyScriptFilePath string) error {
-	/*comm := fmt.Sprintf(transactionBuildTmpl, fee, txHash, txIx, address, output, tokenAmount, tokenName1,
-	tokenAmount, tokenName2, tokenAmount, tokenName1, tokenAmount, tokenName2, policyScriptFilePath)*/
-	txOut := fmt.Sprintf("$%s+$%s+\"$%s $%s + $%s $%s\"", address, output, tokenAmount, tokenName1,
-		tokenAmount, tokenName2)
-	mint := fmt.Sprintf("$%s $%s + $%s $%s", tokenAmount, tokenName1, tokenAmount, tokenName2)
+	tokenName1, tokenName2, policyId, policyScriptFilePath string) error {
+	txOut := fmt.Sprintf("%s+%s+%s %s.%s + %s %s.%s", address, output, tokenAmount,
+		policyId, tokenName1, tokenAmount, policyId, tokenName2)
+	//txOut = strings.ReplaceAll(txOut, "\\", "")
 
-	err := exec.Command("cardano-cli", "transaction", "build-raw",
-		"--fee", fee, "--tx-in", txHash, "--tx-out", txOut, "--mint=", mint,
+	mint := fmt.Sprintf("%s %s.%s + %s %s.%s", tokenAmount, policyId,
+		tokenName1, tokenAmount, policyId, tokenName2)
+	mint = strings.ReplaceAll(mint, "\\", "")
+
+	cmd := exec.Command("cardano-cli", "transaction", "build-raw",
+		"--fee", fee, "--tx-in", txHash+"#"+txIx, "--tx-out", txOut, "--mint", mint,
 		"--minting-script-file", policyScriptFilePath,
-		"--out-file", RawTransactionFile).Run()
-	if err != nil {
-		log.Println(err)
-		return err
+		"--out-file", RawTransactionFile)
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err)
+	}
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
 	}
 
 	return nil
@@ -70,7 +81,3 @@ func TransactionPreBuild(address, id string) (cliOutput string, err error) {
 
 	return string(out), nil
 }
-
-/*func base16Encode(input string)(string, error) {
-
-}*/

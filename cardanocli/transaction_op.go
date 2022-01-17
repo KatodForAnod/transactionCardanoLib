@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"strconv"
 	"strings"
 	"transactionCardanoLib/config"
 )
@@ -22,7 +21,7 @@ func TransactionSign(id string, token config.TokenStruct) error {
 
 	err := exec.Command("cardano-cli", "transaction", "sign", "--signing-key-file",
 		PaymentSignKeyFile, "--signing-key-file", token.PolicySigningFilePath,
-		"--testnet-magic", strconv.Itoa(1097911063), "--tx-body-file", RawTransactionFile, "--out-file", SignedTransactionFile).Run()
+		"--testnet-magic", id, "--tx-body-file", RawTransactionFile, "--out-file", SignedTransactionFile).Run()
 	if err != nil {
 		log.Println(err)
 		return err

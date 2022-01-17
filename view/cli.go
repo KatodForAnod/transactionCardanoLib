@@ -17,9 +17,14 @@ const (
 	buildTransaction = 1
 	signTransaction  = 2
 	exitCommand      = 3
-	startMsg         = "1. Build transaction\n" +
-		"2. Sign transaction\n" +
-		"3. Exit\n"
+)
+
+var (
+	startMsg = fmt.Sprintf(
+		"%d. Build transaction\n"+
+			"%d. Sign transaction\n"+
+			"%d. Exit\n",
+		buildTransaction, signTransaction, exitCommand)
 )
 
 func (f Frontend) Start(conf config.Config) error {

@@ -101,7 +101,7 @@ func (c *CardanoLib) GeneratePolicyID() error {
 }
 
 func (c *CardanoLib) GenerateProtocol(id string) error {
-	err := exec.Command("cardano-cli", "query", "key-gen", "protocol-parameters",
+	err := exec.Command("cardano-cli", "query", "protocol-parameters",
 		"--testnet-magic", id, "--out-file", c.ProtocolParametersFile).Run()
 	if err != nil {
 		log.Println(err)

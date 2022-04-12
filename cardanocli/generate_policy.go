@@ -9,9 +9,13 @@ import (
 )
 
 type CardanoLib struct {
-	PaymentVerifyKeyFile string
-	PaymentSignKeyFile   string
-	PaymentAddrFile      string
+	PaymentVerifyKeyFile      string
+	PaymentSignKeyFile        string
+	PaymentAddrFile           string
+	PolicyVerificationkeyFile string
+	PolicySigningKeyFile      string
+	PolicyDirName             string
+	PolicyScriptFile          string
 }
 
 func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {
@@ -32,22 +36,23 @@ func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {
 	return nil
 }
 
-func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
-	if err = os.MkdirAll("./"+PolicyDirName, os.ModePerm); err != nil {
+func (c *CardanoLib) GeneratePolicy() (err error) {
+	if err = os.MkdirAll("./"+c.PolicyDirName, os.ModePerm); err != nil {
 		log.Println(err)
-		return
-	}
-	err = exec.Command("cardano-cli", "address", "key-gen", "--verification-key-file",
-		PolicyVerificationkeyFile, "--signing-key-file", PolicySigningKeyFile).Run()
-	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 
-	policyScript, err := os.Create(PolicyScriptFile)
+	err = exec.Command("cardano-cli", "address", "key-gen", "--verification-key-file",
+		c.PolicyVerificationkeyFile, "--signing-key-file", c.PolicySigningKeyFile).Run()
 	if err != nil {
 		log.Println(err)
-		return
+		return err
+	}
+
+	policyScript, err := os.Create(c.PolicyScriptFile)
+	if err != nil {
+		log.Println(err)
+		return err
 	}
 	defer policyScript.Close()
 
@@ -56,7 +61,7 @@ func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
 
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "address", "key-hash",
-		"--payment-verification-key-file", PolicyVerificationkeyFile)
+		"--payment-verification-key-file", c.PolicyVerificationkeyFile)
 	cmd.Stdout = &buf
 	if err = cmd.Start(); err != nil {
 		panic(err)
@@ -68,7 +73,7 @@ func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {
 	policyScript.WriteString("  \"type\": \"sig\"\n")
 	policyScript.WriteString("}")
 
-	return PolicyVerificationkeyFile, PolicySigningKeyFile, PolicyScriptFile, nil
+	return nil
 }
 
 func GeneratePolicyID() (string, error) {

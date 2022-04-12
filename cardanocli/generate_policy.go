@@ -8,23 +8,29 @@ import (
 	"strings"
 )
 
-func GeneratePaymentAddr(id string) (verifyFile, signFile,
+type CardanoLib struct {
+	PaymentVerifyKeyFile string
+	PaymentSignKeyFile   string
+	PaymentAddrFile      string
+}
+
+func (c *CardanoLib) GeneratePaymentFiles(id string) (verifyFile, signFile,
 	paymentAddrFile string, err error) {
 	err = exec.Command("cardano-cli", "address", "key-gen",
-		"--verification-key-file", PaymentVerifyKeyFile, "--signing-key-file", PaymentSignKeyFile).Run()
+		"--verification-key-file", c.PaymentVerifyKeyFile, "--signing-key-file", c.PaymentSignKeyFile).Run()
 	if err != nil {
 		log.Println(err)
 		return "", "", "", err
 	}
 
 	err = exec.Command("cardano-cli", "address", "build", "--payment-verification-key-file",
-		PaymentVerifyKeyFile, "--out-file", PaymentAddrFile, "--testnet-magic", id).Run()
+		c.PaymentVerifyKeyFile, "--out-file", c.PaymentAddrFile, "--testnet-magic", id).Run()
 	if err != nil {
 		log.Println(err)
 		return "", "", "", err
 	}
 
-	return PaymentVerifyKeyFile, PaymentSignKeyFile, PaymentAddrFile, nil
+	return c.PaymentVerifyKeyFile, c.PaymentSignKeyFile, c.PaymentAddrFile, nil
 }
 
 func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {

@@ -7,14 +7,16 @@ import (
 
 // Config - structure of config file
 type Config struct {
-	Token TokenStruct `json:"-"`
+	Token TokenStruct `json:"token"`
 }
 
 type TokenStruct struct {
+	ID                         string `json:"id"`
 	TokenName                  string `json:"token_name"`
 	TokenAmount                int64  `json:"token_amount"`
 	PaymentAddress             string `json:"payment_address"`
 	UsingExistingPolicy        bool   `json:"using_existing_policy"`
+	PolicyID                   string `json:"policy_id"`
 	PolicyScriptFilePath       string `json:"policy_script_file_path"`
 	PolicySigningFilePath      string `json:"policy_signing_file_path"`
 	PolicyVerificationFilePath string `json:"policy_verification_file_path"`
@@ -30,7 +32,7 @@ func LoadConfig() (loadedConfig Config, err error) {
 		return loadedConfig, err
 	}
 
-	err = goconfig.LoadConfig(usrHomePath+cConfigPath, &loadedConfig)
+	err = goconfig.LoadConfig(cConfigPath, &loadedConfig)
 	if err == nil {
 		return loadedConfig, nil
 	}

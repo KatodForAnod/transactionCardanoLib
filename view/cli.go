@@ -1,11 +1,12 @@
 package view
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"strconv"
+	"transactionCardanoLib/cardanocli"
 	"transactionCardanoLib/config"
-	"transactionCardanoLib/policy"
 )
 
 type Frontend struct {
@@ -16,9 +17,14 @@ const (
 	buildTransaction = 1
 	signTransaction  = 2
 	exitCommand      = 3
-	startMsg         = "1. Build transaction\n" +
-		"2. Sign transaction\n" +
-		"3. Exit\n"
+)
+
+var (
+	startMsg = fmt.Sprintf(
+		"%d. Build transaction\n"+
+			"%d. Sign transaction\n"+
+			"%d. Exit\n",
+		buildTransaction, signTransaction, exitCommand)
 )
 
 func (f Frontend) Start(conf config.Config) error {
@@ -55,7 +61,7 @@ func (f Frontend) switcher(command int) error {
 		var id string
 		var obj config.TokenStruct
 
-		err := policy.TransactionSign(id, obj)
+		err := cardanocli.TransactionSign(id, obj)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -71,22 +77,22 @@ func (f Frontend) buildTransaction() error {
 	var fee, txHash, txIx, output, tokenName1, tokenName2, tokenAmount string
 
 	fmt.Println("write fee")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&fee); err != nil {
 		log.Println(err)
 		return err
 	}
 	fmt.Println("write txHash")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&txHash); err != nil {
 		log.Println(err)
 		return err
 	}
 	fmt.Println("write txIx")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&txIx); err != nil {
 		log.Println(err)
 		return err
 	}
 	fmt.Println("write output")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&output); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -96,7 +102,7 @@ func (f Frontend) buildTransaction() error {
 		return err
 	}
 	fmt.Println("write tokenName2")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
+	if _, err := fmt.Scan(&tokenName2); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -106,9 +112,12 @@ func (f Frontend) buildTransaction() error {
 		return err
 	}
 
-	err := policy.TransactionBuild(fee, txHash, txIx, f.conf.Token.PaymentAddress, output,
+	tokenName1 = hex.EncodeToString([]byte(tokenName1))
+	tokenName2 = hex.EncodeToString([]byte(tokenName2))
+
+	err := cardanocli.TransactionBuild(fee, txHash, txIx, f.conf.Token.PaymentAddress, output,
 		strconv.FormatInt(f.conf.Token.TokenAmount, 10), // tokenAmount ???
-		tokenName1, tokenName2, f.conf.Token.PolicySigningFilePath)
+		tokenName1, tokenName2, f.conf.Token.PolicyID, f.conf.Token.PolicySigningFilePath)
 
 	if err != nil {
 		log.Println(err)

@@ -17,13 +17,15 @@ const addressBuildCardano = "cardano-cli address build " +
 	"--out-file %s --testnet-magic %s"
 
 func GeneratePaymentAddr(id string) (string, error) {
-	err := exec.Command(keyGenCardano).Run()
+	err := exec.Command("cardano-cli", "address", "key-gen", "--verification-key-file",
+		PaymentVerifyKeyFile, "--signing-key-file", PaymentSignKeyFile).Run()
 	if err != nil {
 		log.Println(err)
 		return "", err
 	}
 
-	err = exec.Command(fmt.Sprintf(addressBuildCardano, PaymentAddrFile, id)).Run()
+	err = exec.Command("cardano-cli", "address", "build", "--payment-verification-key-file",
+		PaymentVerifyKeyFile, "--out-file", PaymentAddrFile, "--testnet-magic", id).Run()
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -55,7 +57,7 @@ const (
 func GeneratePolicy() (err error) {
 	if err := os.Mkdir(PolicyDirName, 0755); err != nil {
 		log.Println(err)
-		return
+		return err
 	}
 	err = exec.Command(fmt.Sprintf(keyGenPolicy, PaymentVerifyKeyFile,
 		PaymentSignKeyFile)).Run()

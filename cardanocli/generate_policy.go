@@ -14,23 +14,22 @@ type CardanoLib struct {
 	PaymentAddrFile      string
 }
 
-func (c *CardanoLib) GeneratePaymentFiles(id string) (verifyFile, signFile,
-	paymentAddrFile string, err error) {
+func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {
 	err = exec.Command("cardano-cli", "address", "key-gen",
 		"--verification-key-file", c.PaymentVerifyKeyFile, "--signing-key-file", c.PaymentSignKeyFile).Run()
 	if err != nil {
 		log.Println(err)
-		return "", "", "", err
+		return err
 	}
 
 	err = exec.Command("cardano-cli", "address", "build", "--payment-verification-key-file",
 		c.PaymentVerifyKeyFile, "--out-file", c.PaymentAddrFile, "--testnet-magic", id).Run()
 	if err != nil {
 		log.Println(err)
-		return "", "", "", err
+		return err
 	}
 
-	return c.PaymentVerifyKeyFile, c.PaymentSignKeyFile, c.PaymentAddrFile, nil
+	return nil
 }
 
 func GeneratePolicy() (verifyFile, signFile, scriptFile string, err error) {

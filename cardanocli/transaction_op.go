@@ -2,12 +2,33 @@ package cardanocli
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"transactionCardanoLib/config"
 )
+
+func (c *CardanoLib) InitCardanoQueryUtxo(id string) (cliOutPut string, err error) {
+	addr, err := os.ReadFile(c.PaymentAddrFile)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	cmd := exec.Command("cardano-cli", "query", "utxo",
+		"--address", string(addr), "--testnet-magic", id)
+	cmd.Stdout = &buf
+	if err := cmd.Start(); err != nil {
+		panic(err)
+	}
+	cmd.Wait()
+
+	return buf.String(), nil
+}
 
 const transactionSignTmpl = "cardano-cli transaction sign " +
 	"--signing-key-file payment.skey  " +

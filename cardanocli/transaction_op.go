@@ -8,10 +8,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"transactionCardanoLib/config"
 )
 
-func (c *CardanoLib) InitCardanoQueryUtxo(id string) (cliOutPut string, err error) {
+func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, err error) {
 	addr, err := os.ReadFile(c.FilePaths.PaymentAddrFile)
 	if err != nil {
 		log.Println(err)
@@ -97,16 +98,34 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) error {
 	return nil
 }
 
-const transactionPreBuildTmpl = "cardano-cli query utxo --address %s --testnet-magic %s"
+func (c *CardanoLib) CalculateFee(id string) (string, error) {
+	var buf bytes.Buffer
+	cmd := exec.Command("cardano-cli", "transaction", "calculate-min-fee",
+		"--tx-body-file", c.FilePaths.RawTransactionFile, "--tx-in-count", "1",
+		"--tx-out-count", "1", "--witness-count", "2", "--testnet-magic", id,
+		"--protocol-params-file", c.FilePaths.ProtocolParametersFile)
+	cmd.Stdout = &buf
+	if err := cmd.Start(); err != nil {
+		panic(err)
+	}
+	cmd.Wait()
 
-func TransactionPreBuild(address, id string) (cliOutput string, err error) {
-	comm := fmt.Sprintf(transactionPreBuildTmpl, address, id)
+	return buf.String(), nil
+}
 
-	out, err := exec.Command(comm).Output()
+func (c *CardanoLib) CalculateOutPut() (string, error) {
+	funds, err := strconv.ParseInt(c.TransactionParams.Funds, 10, 64)
 	if err != nil {
 		log.Println(err)
 		return "", err
 	}
 
-	return string(out), nil
+	fee, err := strconv.ParseInt(c.TransactionParams.Fee, 10, 64)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	output := funds - fee
+	return strconv.Itoa(int(output)), nil
 }

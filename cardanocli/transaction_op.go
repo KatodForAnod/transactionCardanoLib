@@ -12,7 +12,7 @@ import (
 )
 
 func (c *CardanoLib) InitCardanoQueryUtxo(id string) (cliOutPut string, err error) {
-	addr, err := os.ReadFile(c.PaymentAddrFile)
+	addr, err := os.ReadFile(c.FilePaths.PaymentAddrFile)
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -28,6 +28,13 @@ func (c *CardanoLib) InitCardanoQueryUtxo(id string) (cliOutPut string, err erro
 	cmd.Wait()
 
 	return buf.String(), nil
+}
+
+func (c *CardanoLib) InitParams(txHash, txix, funds, fee string) {
+	c.TransactionParams.txhash = txHash
+	c.TransactionParams.funds = funds
+	c.TransactionParams.fee = fee
+	c.TransactionParams.txix = txix
 }
 
 const transactionSignTmpl = "cardano-cli transaction sign " +

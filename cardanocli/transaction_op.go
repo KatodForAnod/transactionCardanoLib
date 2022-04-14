@@ -143,3 +143,15 @@ func (c *CardanoLib) TransactionSign(id string) error {
 
 	return nil
 }
+
+func (c *CardanoLib) TransactionSubmit(id string) error {
+	err := exec.Command("cardano-cli", "transaction", "submit",
+		"--tx-file", c.FilePaths.SignedTransactionFile,
+		"--testnet-magic", id).Run()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}

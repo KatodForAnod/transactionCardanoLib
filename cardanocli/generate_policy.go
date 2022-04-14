@@ -24,6 +24,7 @@ type FilePaths struct {
 	PolicyIDFile              string
 	ProtocolParametersFile    string
 	RawTransactionFile        string
+	SignedTransactionFile     string
 }
 
 type TransactionParams struct {

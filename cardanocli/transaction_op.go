@@ -129,3 +129,17 @@ func (c *CardanoLib) CalculateOutPut() (string, error) {
 	output := funds - fee
 	return strconv.Itoa(int(output)), nil
 }
+
+func (c *CardanoLib) TransactionSign(id string) error {
+	err := exec.Command("cardano-cli", "transaction", "sign",
+		"--signing-key-file", c.FilePaths.PolicySigningKeyFile,
+		"--signing-key-file", c.FilePaths.PolicySigningKeyFile,
+		"--testnet-magic", id, "--tx-body-file", c.FilePaths.RawTransactionFile,
+		"--out-file", c.FilePaths.SignedTransactionFile).Run()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}

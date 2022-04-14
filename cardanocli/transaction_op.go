@@ -30,13 +30,6 @@ func (c *CardanoLib) InitCardanoQueryUtxo(id string) (cliOutPut string, err erro
 	return buf.String(), nil
 }
 
-func (c *CardanoLib) InitParams(txHash, txix, funds, fee string) {
-	c.TransactionParams.txhash = txHash
-	c.TransactionParams.funds = funds
-	c.TransactionParams.fee = fee
-	c.TransactionParams.txix = txix
-}
-
 const transactionSignTmpl = "cardano-cli transaction sign " +
 	"--signing-key-file payment.skey  " +
 	"--signing-key-file %s " +
@@ -76,18 +69,18 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) error {
 		return err
 	}
 
-	txOut := fmt.Sprintf("%s+%s", string(addr), c.TransactionParams.output)
-	mint := fmt.Sprintf("+\"%s %s.%s", c.TransactionParams.tokenAmount, string(policyId), tokenName[0])
+	txOut := fmt.Sprintf("%s+%s", string(addr), c.TransactionParams.Output)
+	mint := fmt.Sprintf("+\"%s %s.%s", c.TransactionParams.TokenAmount, string(policyId), tokenName[0])
 	for i := 1; i < len(tokenName); i++ {
 		mint += fmt.Sprintf(" + %s %s.%s",
-			c.TransactionParams.tokenAmount, string(policyId), tokenName[0])
+			c.TransactionParams.TokenAmount, string(policyId), tokenName[0])
 	}
 	mint += "\""
 	txOut += mint
 
 	cmd := exec.Command("cardano-cli", "transaction", "build-raw",
-		"--fee", c.TransactionParams.fee, "--tx-in",
-		c.TransactionParams.txhash+"#"+c.TransactionParams.txix, "--tx-out", txOut, "--mint=", mint,
+		"--Fee", c.TransactionParams.Fee, "--tx-in",
+		c.TransactionParams.TxHash+"#"+c.TransactionParams.Txix, "--tx-out", txOut, "--mint=", mint,
 		"--minting-script-file", c.FilePaths.PolicyScriptFile,
 		"--out-file", c.FilePaths.RawTransactionFile)
 	stderr, _ := cmd.StderrPipe()

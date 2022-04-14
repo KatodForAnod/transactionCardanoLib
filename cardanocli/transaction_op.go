@@ -70,23 +70,23 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) error {
 	}
 
 	txOut := fmt.Sprintf("%s+%s+", string(addr), c.TransactionParams.Output)
-	mint := fmt.Sprintf("\"%s %s.%s", c.TransactionParams.TokenAmount, string(policyId), tokenName[0])
+	mint := fmt.Sprintf("%s %s.%s", c.TransactionParams.TokenAmount, string(policyId), tokenName[0])
 	for i := 1; i < len(tokenName); i++ {
 		mint += fmt.Sprintf(" + %s %s.%s",
 			c.TransactionParams.TokenAmount, string(policyId), tokenName[i])
 	}
-	mint += "\""
 	txOut += mint
-	fmt.Println("mint", mint)
+
 	cmd := exec.Command("cardano-cli", "transaction", "build-raw",
 		"--fee", c.TransactionParams.Fee, "--tx-in",
-		c.TransactionParams.TxHash+"#"+c.TransactionParams.Txix, "--tx-out", txOut, "--mint=", mint,
+		c.TransactionParams.TxHash+"#"+c.TransactionParams.Txix, "--tx-out", txOut, "--mint="+mint,
 		"--minting-script-file", c.FilePaths.PolicyScriptFile,
 		"--out-file", c.FilePaths.RawTransactionFile)
 	stderr, _ := cmd.StderrPipe()
 
 	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return err
 	}
 
 	scanner := bufio.NewScanner(stderr)

@@ -23,13 +23,16 @@ type FilePaths struct {
 	PolicyScriptFile          string
 	PolicyIDFile              string
 	ProtocolParametersFile    string
+	RawTransactionFile        string
 }
 
 type TransactionParams struct {
-	txhash string
-	txix   string
-	funds  string
-	fee    string
+	txhash      string
+	txix        string
+	funds       string
+	fee         string
+	tokenAmount string
+	output      string
 }
 
 func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {

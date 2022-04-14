@@ -3,11 +3,11 @@ package cardanocli
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 	"transactionCardanoLib/config"
 )
 
@@ -58,29 +58,38 @@ func TransactionSign(id string, token config.TokenStruct) error {
 	return nil
 }
 
-const transactionBuildTmpl = "cardano-cli transaction build-raw " +
-	"--fee %s " +
-	"--tx-in $%s#$%s " +
-	"--tx-out $%s+$%s+\"$%s $%s + $%s $%s\" " +
-	"--mint=\"$%s $%s + $%s $%s\" " +
-	"--minting-script-file %s " +
-	"--out-file " + RawTransactionFile
-
 // TransactionBuild - tokenName1 and tokenName2 must be in base16
-func TransactionBuild(fee, txHash, txIx, address, output, tokenAmount,
-	tokenName1, tokenName2, policyId, policyScriptFilePath string) error {
-	txOut := fmt.Sprintf("%s+%s+%s %s.%s + %s %s.%s", address, output, tokenAmount,
-		policyId, tokenName1, tokenAmount, policyId, tokenName2)
-	//txOut = strings.ReplaceAll(txOut, "\\", "")
+func (c *CardanoLib) TransactionBuild(tokenName []string) error {
+	if len(tokenName) < 1 {
+		return errors.New("")
+	}
 
-	mint := fmt.Sprintf("%s %s.%s + %s %s.%s", tokenAmount, policyId,
-		tokenName1, tokenAmount, policyId, tokenName2)
-	mint = strings.ReplaceAll(mint, "\\", "")
+	addr, err := os.ReadFile(c.FilePaths.PaymentAddrFile)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	policyId, err := os.ReadFile(c.FilePaths.PolicyIDFile)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	txOut := fmt.Sprintf("%s+%s", string(addr), c.TransactionParams.output)
+	mint := fmt.Sprintf("+\"%s %s.%s", c.TransactionParams.tokenAmount, string(policyId), tokenName[0])
+	for i := 1; i < len(tokenName); i++ {
+		mint += fmt.Sprintf(" + %s %s.%s",
+			c.TransactionParams.tokenAmount, string(policyId), tokenName[0])
+	}
+	mint += "\""
+	txOut += mint
 
 	cmd := exec.Command("cardano-cli", "transaction", "build-raw",
-		"--fee", fee, "--tx-in", txHash+"#"+txIx, "--tx-out", txOut, "--mint", mint,
-		"--minting-script-file", policyScriptFilePath,
-		"--out-file", RawTransactionFile)
+		"--fee", c.TransactionParams.fee, "--tx-in",
+		c.TransactionParams.txhash+"#"+c.TransactionParams.txix, "--tx-out", txOut, "--mint=", mint,
+		"--minting-script-file", c.FilePaths.PolicyScriptFile,
+		"--out-file", c.FilePaths.RawTransactionFile)
 	stderr, _ := cmd.StderrPipe()
 
 	if err := cmd.Start(); err != nil {

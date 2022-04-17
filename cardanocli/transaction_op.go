@@ -74,11 +74,16 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) (errorOutput []string,
 
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			errorOutput = append(errorOutput, scanner.Text())
-		}
 		return errorOutput, err
+	}
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		errorOutput = append(errorOutput, scanner.Text())
+	}
+
+	if len(errorOutput) > 0 {
+		err = fmt.Errorf("TransactionBuild error %v", err.Error())
 	}
 
 	return errorOutput, nil
@@ -95,21 +100,26 @@ func (c *CardanoLib) CalculateFee(id string) (fee string, errorOutput []string, 
 
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			errorOutput = append(errorOutput, scanner.Text())
-		}
 		return "", errorOutput, err
 	}
 
 	cmd.Wait()
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		errorOutput = append(errorOutput, scanner.Text())
+	}
+
+	if len(errorOutput) > 0 {
+		return "", errorOutput, fmt.Errorf("TransactionBuild error %v", err.Error())
+	}
 
 	arr := strings.Split(buf.String(), " ")
 	if len(arr) < 2 {
 		return "", errorOutput, errors.New("split error")
 	}
 
-	return arr[0], errorOutput, nil
+	return arr[0], errorOutput, err
 }
 
 func (c *CardanoLib) CalculateOutPut() (string, error) {
@@ -139,16 +149,21 @@ func (c *CardanoLib) TransactionSign(id string) (errorOutput []string, err error
 
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			errorOutput = append(errorOutput, scanner.Text())
-		}
 		return errorOutput, err
 	}
 
 	cmd.Wait()
 
-	return errorOutput, nil
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		errorOutput = append(errorOutput, scanner.Text())
+	}
+
+	if len(errorOutput) > 0 {
+		err = fmt.Errorf("TransactionSign error %v", err.Error())
+	}
+
+	return errorOutput, err
 }
 
 func (c *CardanoLib) TransactionSubmit(id string) (errorOutput []string, err error) {
@@ -159,14 +174,19 @@ func (c *CardanoLib) TransactionSubmit(id string) (errorOutput []string, err err
 
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			errorOutput = append(errorOutput, scanner.Text())
-		}
 		return errorOutput, err
 	}
 
 	cmd.Wait()
 
-	return []string{}, nil
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		errorOutput = append(errorOutput, scanner.Text())
+	}
+
+	if len(errorOutput) > 0 {
+		err = fmt.Errorf("TransactionSubmit error %v", err.Error())
+	}
+
+	return []string{}, err
 }

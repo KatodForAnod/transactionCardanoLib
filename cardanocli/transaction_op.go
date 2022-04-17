@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"transactionCardanoLib/config"
 )
 
@@ -30,13 +31,6 @@ func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, err error) {
 
 	return buf.String(), nil
 }
-
-const transactionSignTmpl = "cardano-cli transaction sign " +
-	"--signing-key-file payment.skey  " +
-	"--signing-key-file %s " +
-	"--testnet-magic %s " +
-	"--tx-body-file " + RawTransactionFile + " " +
-	"--out-file " + SignedTransactionFile
 
 func TransactionSign(id string, token config.TokenStruct) error {
 	//comm := fmt.Sprintf(transactionSignTmpl, token.PolicySigningFilePath, id)
@@ -110,7 +104,12 @@ func (c *CardanoLib) CalculateFee(id string) (string, error) {
 	}
 	cmd.Wait()
 
-	return buf.String(), nil
+	arr := strings.Split(buf.String(), " ")
+	if len(arr) < 2 {
+		return "", errors.New("split error")
+	}
+
+	return arr[0], nil
 }
 
 func (c *CardanoLib) CalculateOutPut() (string, error) {

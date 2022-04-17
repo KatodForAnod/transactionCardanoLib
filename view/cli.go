@@ -1,30 +1,34 @@
 package view
 
 import (
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strconv"
 	"transactionCardanoLib/cardanocli"
 	"transactionCardanoLib/config"
 )
 
 type Frontend struct {
-	conf config.Config
+	conf       config.Config
+	cardanoLib cardanocli.CardanoLib
 }
 
 const (
-	buildTransaction = 1
-	signTransaction  = 2
-	exitCommand      = 3
+	buildTransaction  = 1
+	signTransaction   = 2
+	exitCommand       = 10
+	showCardanoUtxo   = 3
+	submitTransaction = 4
 )
 
 var (
 	startMsg = fmt.Sprintf(
 		"%d. Build transaction\n"+
 			"%d. Sign transaction\n"+
+			"%d. Show cardano utxo"+
+			"%d. Submit transaction"+
 			"%d. Exit\n",
-		buildTransaction, signTransaction, exitCommand)
+		buildTransaction, signTransaction,
+		showCardanoUtxo, submitTransaction, exitCommand)
 )
 
 func (f Frontend) Start(conf config.Config) error {
@@ -49,79 +53,82 @@ func (f Frontend) Start(conf config.Config) error {
 	}
 }
 
-func (f Frontend) switcher(command int) error {
+func (f *Frontend) switcher(command int) error {
 	switch command {
 	case buildTransaction:
-		if err := f.buildTransaction(); err != nil {
+		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo(f.conf.ID)
+		if errOutput != nil {
 			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
 			return err
 		}
-	case signTransaction:
-		fmt.Println("input id")
-		var id string
-		var obj config.TokenStruct
+		fmt.Println(cliOut)
 
-		err := cardanocli.TransactionSign(id, obj)
+		f.cardanoLib.TransactionParams.Fee = "300000"
+		f.cardanoLib.TransactionParams.Output = "0"
+
+		fmt.Println("input txHash")
+		fmt.Scan(&f.cardanoLib.TransactionParams.TxHash)
+		fmt.Println("input txIx")
+		fmt.Scan(&f.cardanoLib.TransactionParams.Txix)
+		fmt.Println("input amount")
+		fmt.Scan(&f.cardanoLib.TransactionParams.Funds)
+		fmt.Println("input token amount")
+		fmt.Scan(&f.cardanoLib.TransactionParams.TokenAmount)
+
+		var tokenNames []string
+		for _, token := range f.conf.Token {
+			tokenNames = append(tokenNames, token.TokenName)
+		}
+		f.cardanoLib.TransactionBuild(tokenNames)
+
+		fee, errOutput, err := f.cardanoLib.CalculateFee(f.conf.ID)
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
+		f.cardanoLib.TransactionParams.Fee = fee
+
+		output, err := f.cardanoLib.CalculateOutPut()
 		if err != nil {
 			log.Println(err)
 			return err
 		}
+		f.cardanoLib.TransactionParams.Output = output
+
+		errOutput, err = f.cardanoLib.TransactionBuild(tokenNames)
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
+	case signTransaction:
+		errOutput, err := f.cardanoLib.TransactionSign(f.conf.ID)
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
+	case submitTransaction:
+		errOutput, err := f.cardanoLib.TransactionSubmit(f.conf.ID)
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
 	default:
 		fmt.Println("unsupported command")
-	}
-
-	return nil
-}
-
-func (f Frontend) buildTransaction() error {
-	var fee, txHash, txIx, output, tokenName1, tokenName2, tokenAmount string
-
-	fmt.Println("write fee")
-	if _, err := fmt.Scan(&fee); err != nil {
-		log.Println(err)
-		return err
-	}
-	fmt.Println("write txHash")
-	if _, err := fmt.Scan(&txHash); err != nil {
-		log.Println(err)
-		return err
-	}
-	fmt.Println("write txIx")
-	if _, err := fmt.Scan(&txIx); err != nil {
-		log.Println(err)
-		return err
-	}
-	fmt.Println("write output")
-	if _, err := fmt.Scan(&output); err != nil {
-		log.Println(err)
-		return err
-	}
-	fmt.Println("write tokenName1")
-	if _, err := fmt.Scan(&tokenName1); err != nil {
-		log.Println(err)
-		return err
-	}
-	fmt.Println("write tokenName2")
-	if _, err := fmt.Scan(&tokenName2); err != nil {
-		log.Println(err)
-		return err
-	}
-	fmt.Println("write tokenAmount")
-	if _, err := fmt.Scan(&tokenAmount); err != nil {
-		log.Println(err)
-		return err
-	}
-
-	tokenName1 = hex.EncodeToString([]byte(tokenName1))
-	tokenName2 = hex.EncodeToString([]byte(tokenName2))
-
-	err := cardanocli.TransactionBuild(fee, txHash, txIx, f.conf.Token.PaymentAddress, output,
-		strconv.FormatInt(f.conf.Token.TokenAmount, 10), // tokenAmount ???
-		tokenName1, tokenName2, f.conf.Token.PolicyID, f.conf.Token.PolicySigningFilePath)
-
-	if err != nil {
-		log.Println(err)
-		return err
 	}
 
 	return nil

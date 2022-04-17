@@ -13,11 +13,12 @@ type Frontend struct {
 }
 
 const (
-	buildTransaction  = 1
-	signTransaction   = 2
-	exitCommand       = 10
-	showCardanoUtxo   = 3
-	submitTransaction = 4
+	buildTransaction    = 1
+	signTransaction     = 2
+	exitCommand         = 10
+	showCardanoUtxo     = 3
+	submitTransaction   = 4
+	generatePolicyFiles = 5
 )
 
 var (
@@ -26,9 +27,11 @@ var (
 			"%d. Sign transaction\n"+
 			"%d. Show cardano utxo\n"+
 			"%d. Submit transaction\n"+
+			"%d. Generate policy file\n"+
 			"%d. Exit\n",
 		buildTransaction, signTransaction,
-		showCardanoUtxo, submitTransaction, exitCommand)
+		showCardanoUtxo, submitTransaction,
+		generatePolicyFiles, exitCommand)
 )
 
 func (f *Frontend) SetConfAndCardanoLib(conf config.Config,
@@ -87,7 +90,16 @@ func (f *Frontend) switcher(command int) error {
 		for _, token := range f.conf.Token {
 			tokenNames = append(tokenNames, token.TokenName)
 		}
-		f.cardanoLib.TransactionBuild(tokenNames)
+
+		errOutput, err = f.cardanoLib.TransactionBuild(tokenNames)
+		if err != nil {
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+
+			log.Println(err)
+			return err
+		}
 
 		fee, errOutput, err := f.cardanoLib.CalculateFee(f.conf.ID)
 		if err != nil {
@@ -130,6 +142,33 @@ func (f *Frontend) switcher(command int) error {
 			for _, s := range errOutput {
 				fmt.Println(s)
 			}
+			return err
+		}
+	case showCardanoUtxo:
+		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo(f.conf.ID)
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
+		fmt.Println(cliOut)
+	case generatePolicyFiles:
+		f.cardanoLib.GeneratePaymentFiles("1097911063")
+		err := f.cardanoLib.GenerateProtocol(f.conf.ID)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		err = f.cardanoLib.GeneratePolicy()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		err = f.cardanoLib.GeneratePolicyID()
+		if err != nil {
+			log.Println(err)
 			return err
 		}
 	default:

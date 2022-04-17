@@ -83,7 +83,7 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) (errorOutput []string,
 	}
 
 	if len(errorOutput) > 0 {
-		err = fmt.Errorf("TransactionBuild error %v", err.Error())
+		return errorOutput, fmt.Errorf("TransactionBuild error")
 	}
 
 	return errorOutput, nil
@@ -111,7 +111,7 @@ func (c *CardanoLib) CalculateFee(id string) (fee string, errorOutput []string, 
 	}
 
 	if len(errorOutput) > 0 {
-		return "", errorOutput, fmt.Errorf("TransactionBuild error %v", err.Error())
+		return "", errorOutput, fmt.Errorf("CalculateFee error")
 	}
 
 	arr := strings.Split(buf.String(), " ")
@@ -160,10 +160,10 @@ func (c *CardanoLib) TransactionSign(id string) (errorOutput []string, err error
 	}
 
 	if len(errorOutput) > 0 {
-		err = fmt.Errorf("TransactionSign error %v", err.Error())
+		return errorOutput, fmt.Errorf("TransactionSign error")
 	}
 
-	return errorOutput, err
+	return errorOutput, nil
 }
 
 func (c *CardanoLib) TransactionSubmit(id string) (errorOutput []string, err error) {
@@ -185,8 +185,8 @@ func (c *CardanoLib) TransactionSubmit(id string) (errorOutput []string, err err
 	}
 
 	if len(errorOutput) > 0 {
-		err = fmt.Errorf("TransactionSubmit error %v", err.Error())
+		return []string{}, fmt.Errorf("TransactionSubmit error")
 	}
 
-	return []string{}, err
+	return []string{}, nil
 }

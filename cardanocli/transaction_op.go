@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"transactionCardanoLib/config"
 )
 
 func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, err error) {
@@ -30,20 +29,6 @@ func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, err error) {
 	cmd.Wait()
 
 	return buf.String(), nil
-}
-
-func TransactionSign(id string, token config.TokenStruct) error {
-	//comm := fmt.Sprintf(transactionSignTmpl, token.PolicySigningFilePath, id)
-
-	err := exec.Command("cardano-cli", "transaction", "sign", "--signing-key-file",
-		PaymentSignKeyFile, "--signing-key-file", token.PolicySigningFilePath,
-		"--testnet-magic", id, "--tx-body-file", RawTransactionFile, "--out-file", SignedTransactionFile).Run()
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	// get error msg
-	return nil
 }
 
 // TransactionBuild - tokenName1 and tokenName2 must be in base16
@@ -78,6 +63,8 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) error {
 		"--minting-script-file", c.FilePaths.PolicyScriptFile,
 		"--out-file", c.FilePaths.RawTransactionFile)
 	stderr, _ := cmd.StderrPipe()
+
+	fmt.Println("command build", cmd.String())
 
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
@@ -131,7 +118,7 @@ func (c *CardanoLib) CalculateOutPut() (string, error) {
 
 func (c *CardanoLib) TransactionSign(id string) error {
 	err := exec.Command("cardano-cli", "transaction", "sign",
-		"--signing-key-file", c.FilePaths.PolicySigningKeyFile,
+		"--signing-key-file", c.FilePaths.PaymentSignKeyFile,
 		"--signing-key-file", c.FilePaths.PolicySigningKeyFile,
 		"--testnet-magic", id, "--tx-body-file", c.FilePaths.RawTransactionFile,
 		"--out-file", c.FilePaths.SignedTransactionFile).Run()

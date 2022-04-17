@@ -12,11 +12,11 @@ import (
 	"strings"
 )
 
-func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, err error) {
+func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, errorOutput []string, err error) {
 	addr, err := os.ReadFile(c.FilePaths.PaymentAddrFile)
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return "", errorOutput, err
 	}
 
 	var buf bytes.Buffer
@@ -29,32 +29,32 @@ func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, err error) {
 		log.Println(err)
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			errorOutput = append(errorOutput, scanner.Text())
 		}
-		return "", err
+		return "", errorOutput, err
 	}
 
 	cmd.Wait()
 
-	return buf.String(), nil
+	return buf.String(), errorOutput, nil
 }
 
 // TransactionBuild - tokenName1 and tokenName2 must be in base16
-func (c *CardanoLib) TransactionBuild(tokenName []string) error {
+func (c *CardanoLib) TransactionBuild(tokenName []string) (errorOutput []string, err error) {
 	if len(tokenName) < 1 {
-		return errors.New("")
+		return errorOutput, errors.New("")
 	}
 
 	addr, err := os.ReadFile(c.FilePaths.PaymentAddrFile)
 	if err != nil {
 		log.Println(err)
-		return err
+		return errorOutput, err
 	}
 
 	policyId, err := os.ReadFile(c.FilePaths.PolicyIDFile)
 	if err != nil {
 		log.Println(err)
-		return err
+		return errorOutput, err
 	}
 
 	txOut := fmt.Sprintf("%s+%s+", string(addr), c.TransactionParams.Output)
@@ -76,15 +76,15 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) error {
 		log.Println(err)
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			errorOutput = append(errorOutput, scanner.Text())
 		}
-		return err
+		return errorOutput, err
 	}
 
-	return nil
+	return errorOutput, nil
 }
 
-func (c *CardanoLib) CalculateFee(id string) (string, error) {
+func (c *CardanoLib) CalculateFee(id string) (fee string, errorOutput []string, err error) {
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "transaction", "calculate-min-fee",
 		"--tx-body-file", c.FilePaths.RawTransactionFile, "--tx-in-count", "1",
@@ -97,19 +97,19 @@ func (c *CardanoLib) CalculateFee(id string) (string, error) {
 		log.Println(err)
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			errorOutput = append(errorOutput, scanner.Text())
 		}
-		return "", err
+		return "", errorOutput, err
 	}
 
 	cmd.Wait()
 
 	arr := strings.Split(buf.String(), " ")
 	if len(arr) < 2 {
-		return "", errors.New("split error")
+		return "", errorOutput, errors.New("split error")
 	}
 
-	return arr[0], nil
+	return arr[0], errorOutput, nil
 }
 
 func (c *CardanoLib) CalculateOutPut() (string, error) {
@@ -129,7 +129,7 @@ func (c *CardanoLib) CalculateOutPut() (string, error) {
 	return strconv.Itoa(int(output)), nil
 }
 
-func (c *CardanoLib) TransactionSign(id string) error {
+func (c *CardanoLib) TransactionSign(id string) (errorOutput []string, err error) {
 	cmd := exec.Command("cardano-cli", "transaction", "sign",
 		"--signing-key-file", c.FilePaths.PaymentSignKeyFile,
 		"--signing-key-file", c.FilePaths.PolicySigningKeyFile,
@@ -141,17 +141,17 @@ func (c *CardanoLib) TransactionSign(id string) error {
 		log.Println(err)
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			errorOutput = append(errorOutput, scanner.Text())
 		}
-		return err
+		return errorOutput, err
 	}
 
 	cmd.Wait()
 
-	return nil
+	return errorOutput, nil
 }
 
-func (c *CardanoLib) TransactionSubmit(id string) error {
+func (c *CardanoLib) TransactionSubmit(id string) (errorOutput []string, err error) {
 	cmd := exec.Command("cardano-cli", "transaction", "submit",
 		"--tx-file", c.FilePaths.SignedTransactionFile,
 		"--testnet-magic", id)
@@ -161,12 +161,12 @@ func (c *CardanoLib) TransactionSubmit(id string) error {
 		log.Println(err)
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			errorOutput = append(errorOutput, scanner.Text())
 		}
-		return err
+		return errorOutput, err
 	}
 
 	cmd.Wait()
 
-	return nil
+	return []string{}, nil
 }

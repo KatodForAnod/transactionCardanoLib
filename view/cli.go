@@ -24,15 +24,20 @@ var (
 	startMsg = fmt.Sprintf(
 		"%d. Build transaction\n"+
 			"%d. Sign transaction\n"+
-			"%d. Show cardano utxo"+
-			"%d. Submit transaction"+
+			"%d. Show cardano utxo\n"+
+			"%d. Submit transaction\n"+
 			"%d. Exit\n",
 		buildTransaction, signTransaction,
 		showCardanoUtxo, submitTransaction, exitCommand)
 )
 
-func (f Frontend) Start(conf config.Config) error {
+func (f *Frontend) SetConfAndCardanoLib(conf config.Config,
+	cardanoLib cardanocli.CardanoLib) {
 	f.conf = conf
+	f.cardanoLib = cardanoLib
+}
+
+func (f *Frontend) Start() error {
 	fmt.Print(startMsg)
 
 	for {
@@ -57,7 +62,7 @@ func (f *Frontend) switcher(command int) error {
 	switch command {
 	case buildTransaction:
 		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo(f.conf.ID)
-		if errOutput != nil {
+		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {
 				fmt.Println(s)

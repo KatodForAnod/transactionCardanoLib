@@ -23,9 +23,17 @@ func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, err error) {
 	cmd := exec.Command("cardano-cli", "query", "utxo",
 		"--address", string(addr), "--testnet-magic", id)
 	cmd.Stdout = &buf
-	if err := cmd.Start(); err != nil {
-		panic(err)
+	stderr, _ := cmd.StderrPipe()
+
+	if err = cmd.Start(); err != nil {
+		log.Println(err)
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+		return "", err
 	}
+
 	cmd.Wait()
 
 	return buf.String(), nil
@@ -64,16 +72,13 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) error {
 		"--out-file", c.FilePaths.RawTransactionFile)
 	stderr, _ := cmd.StderrPipe()
 
-	fmt.Println("command build", cmd.String())
-
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
 		return err
-	}
-
-	scanner := bufio.NewScanner(stderr)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
 	}
 
 	return nil
@@ -86,9 +91,17 @@ func (c *CardanoLib) CalculateFee(id string) (string, error) {
 		"--tx-out-count", "1", "--witness-count", "2", "--testnet-magic", id,
 		"--protocol-params-file", c.FilePaths.ProtocolParametersFile)
 	cmd.Stdout = &buf
+	stderr, _ := cmd.StderrPipe()
+
 	if err := cmd.Start(); err != nil {
-		panic(err)
+		log.Println(err)
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+		return "", err
 	}
+
 	cmd.Wait()
 
 	arr := strings.Split(buf.String(), " ")
@@ -117,27 +130,43 @@ func (c *CardanoLib) CalculateOutPut() (string, error) {
 }
 
 func (c *CardanoLib) TransactionSign(id string) error {
-	err := exec.Command("cardano-cli", "transaction", "sign",
+	cmd := exec.Command("cardano-cli", "transaction", "sign",
 		"--signing-key-file", c.FilePaths.PaymentSignKeyFile,
 		"--signing-key-file", c.FilePaths.PolicySigningKeyFile,
 		"--testnet-magic", id, "--tx-body-file", c.FilePaths.RawTransactionFile,
-		"--out-file", c.FilePaths.SignedTransactionFile).Run()
-	if err != nil {
+		"--out-file", c.FilePaths.SignedTransactionFile)
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
 		log.Println(err)
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
 		return err
 	}
+
+	cmd.Wait()
 
 	return nil
 }
 
 func (c *CardanoLib) TransactionSubmit(id string) error {
-	err := exec.Command("cardano-cli", "transaction", "submit",
+	cmd := exec.Command("cardano-cli", "transaction", "submit",
 		"--tx-file", c.FilePaths.SignedTransactionFile,
-		"--testnet-magic", id).Run()
-	if err != nil {
+		"--testnet-magic", id)
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
 		log.Println(err)
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
 		return err
 	}
+
+	cmd.Wait()
 
 	return nil
 }

@@ -18,7 +18,7 @@ type Config struct {
 
 type Token struct {
 	TokenName   string `json:"token_name"`
-	TokenAmount int64  `json:"token_amount"`
+	TokenAmount string `json:"token_amount"`
 }
 
 const cConfigPath = "conf.config"

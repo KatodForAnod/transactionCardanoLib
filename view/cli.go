@@ -71,16 +71,17 @@ func (f *Frontend) Start() error {
 
 		for {
 			fmt.Print(transactionOpMsg)
-			if _, err := fmt.Scan(&choiceCommand); err != nil {
+			var choiceCommandTransaction int
+			if _, err := fmt.Scan(&choiceCommandTransaction); err != nil {
 				log.Println(err)
 				return err
 			}
-			if choiceCommand == exitCommand {
+			if choiceCommandTransaction == exitCommand {
 				break
 			}
 			switch choiceCommand {
 			case createTokens:
-				if err := f.switcherCreateTokens(choiceCommand); err != nil {
+				if err := f.switcherCreateTokens(choiceCommandTransaction); err != nil {
 					log.Println(err)
 					return err
 				}
@@ -185,4 +186,23 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 
 /*func (f *Frontend) switcherSendTokens(command int) error {
 
-}*/
+		errOutput, err = f.cardanoLib.TransactionBuild(f.conf.Token)
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
+	case signTransaction:
+
+	case submitTransaction:
+
+	case showCardanoUtxo:
+
+	default:
+		fmt.Println("unsupported command")
+	}
+
+	return nil
+}

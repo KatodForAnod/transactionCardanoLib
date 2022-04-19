@@ -28,12 +28,11 @@ type FilePaths struct {
 }
 
 type TransactionParams struct {
-	TxHash      string
-	Txix        string
-	Funds       string
-	Fee         string
-	TokenAmount string
-	Output      string
+	TxHash string
+	Txix   string
+	Funds  string
+	Fee    string
+	Output string
 }
 
 func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {

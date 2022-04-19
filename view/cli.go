@@ -83,15 +83,8 @@ func (f *Frontend) switcher(command int) error {
 		fmt.Scan(&f.cardanoLib.TransactionParams.Txix)
 		fmt.Println("input amount")
 		fmt.Scan(&f.cardanoLib.TransactionParams.Funds)
-		fmt.Println("input token amount")
-		fmt.Scan(&f.cardanoLib.TransactionParams.TokenAmount)
 
-		var tokenNames []string
-		for _, token := range f.conf.Token {
-			tokenNames = append(tokenNames, token.TokenName)
-		}
-
-		errOutput, err = f.cardanoLib.TransactionBuild(tokenNames)
+		errOutput, err = f.cardanoLib.TransactionBuild(f.conf.Token)
 		if err != nil {
 			for _, s := range errOutput {
 				fmt.Println(s)

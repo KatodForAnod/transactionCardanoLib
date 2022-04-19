@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"transactionCardanoLib/config"
 )
 
 func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, errorOutput []string, err error) {
@@ -40,8 +41,8 @@ func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, errorOutput 
 }
 
 // TransactionBuild - tokenName1 and tokenName2 must be in base16
-func (c *CardanoLib) TransactionBuild(tokenName []string) (errorOutput []string, err error) {
-	if len(tokenName) < 1 {
+func (c *CardanoLib) TransactionBuild(tokens []config.Token) (errorOutput []string, err error) {
+	if len(tokens) < 1 {
 		return errorOutput, errors.New("")
 	}
 
@@ -58,10 +59,10 @@ func (c *CardanoLib) TransactionBuild(tokenName []string) (errorOutput []string,
 	}
 
 	txOut := fmt.Sprintf("%s+%s+", string(addr), c.TransactionParams.Output)
-	mint := fmt.Sprintf("%s %s.%s", c.TransactionParams.TokenAmount, string(policyId), tokenName[0])
-	for i := 1; i < len(tokenName); i++ {
+	mint := fmt.Sprintf("%s %s.%s", tokens[0].TokenAmount, string(policyId), tokens[0].TokenName)
+	for i := 1; i < len(tokens); i++ {
 		mint += fmt.Sprintf(" + %s %s.%s",
-			c.TransactionParams.TokenAmount, string(policyId), tokenName[i])
+			tokens[i].TokenAmount, string(policyId), tokens[i].TokenName)
 	}
 	txOut += mint
 
@@ -190,3 +191,43 @@ func (c *CardanoLib) TransactionSubmit(id string) (errorOutput []string, err err
 
 	return []string{}, nil
 }
+
+/*func (c *CardanoLib) TransactionBuildSendingToken(receiverAddr,
+	receiverOutput string) (errorOutput []string, err error) {
+	policyId, err := os.ReadFile(c.FilePaths.PolicyIDFile)
+	if err != nil {
+		log.Println(err)
+		return errorOutput, err
+	}
+
+	txOut := fmt.Sprintf("%s+%s+", string(addr), c.TransactionParams.Output)
+	mint := fmt.Sprintf("%s %s.%s", c.TransactionParams.TokenAmount, string(policyId), tokenName[0])
+	for i := 1; i < len(tokenName); i++ {
+		mint += fmt.Sprintf(" + %s %s.%s",
+			c.TransactionParams.TokenAmount, string(policyId), tokenName[i])
+	}
+	txOut += mint
+
+	cmd := exec.Command("cardano-cli", "transaction", "build-raw",
+		"--fee", c.TransactionParams.Fee, "--tx-in",
+		c.TransactionParams.TxHash+"#"+c.TransactionParams.Txix, "--tx-out", txOut, "--mint="+mint,
+		"--minting-script-file", c.FilePaths.PolicyScriptFile,
+		"--out-file", c.FilePaths.RawTransactionFile)
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		log.Println(err)
+		return errorOutput, err
+	}
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		errorOutput = append(errorOutput, scanner.Text())
+	}
+
+	if len(errorOutput) > 0 {
+		return errorOutput, fmt.Errorf("TransactionBuild error")
+	}
+
+	return errorOutput, nil
+}*/

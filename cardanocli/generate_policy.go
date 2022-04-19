@@ -133,6 +133,9 @@ func (c *CardanoLib) UseExistPolicy(conf config.Config) error {
 	PolicyVerificationkeyFile = conf.PolicyVerificationFilePath
 
 	c.TransactionParams.PolicyID = conf.PolicyID
+	c.TransactionParams.ID = conf.ID
+	c.TransactionParams.PaymentAddr = conf.PaymentAddress
+
 	return nil
 }
 

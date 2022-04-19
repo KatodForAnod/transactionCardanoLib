@@ -39,8 +39,6 @@ func (f *Frontend) SetConfAndCardanoLib(conf config.Config,
 	f.conf = conf
 	f.cardanoLib = cardanoLib
 
-	f.cardanoLib.TransactionParams.ID = conf.ID
-	f.cardanoLib.TransactionParams.PaymentAddr = conf.PaymentAddress
 	if f.conf.UsingExistingPolicy {
 		f.cardanoLib.UseExistPolicy(conf)
 	} else {

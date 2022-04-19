@@ -138,24 +138,18 @@ func (c *CardanoLib) UseExistPolicy(conf config.Config) error {
 }
 
 func (c *CardanoLib) GeneratePolicyFiles() error {
-	err := exec.Command("cardano-cli", "address", "key-gen",
-		"--verification-key-file", PaymentVerifyKeyFile,
-		"--signing-key-file", PaymentSignKeyFile).Run()
+	err := c.GenerateProtocol()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = c.GenerateProtocol()
-	if err != nil {
-		log.Println(err)
-		return err
-	}
 	err = c.GeneratePolicy()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
 	err = c.GeneratePolicyID()
 	if err != nil {
 		log.Println(err)

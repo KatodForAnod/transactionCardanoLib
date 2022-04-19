@@ -27,11 +27,10 @@ var (
 			"%d. Sign transaction\n"+
 			"%d. Show cardano utxo\n"+
 			"%d. Submit transaction\n"+
-			"%d. Generate policy file\n"+
 			"%d. Exit\n",
 		buildTransaction, signTransaction,
 		showCardanoUtxo, submitTransaction,
-		generatePolicyFiles, exitCommand)
+		exitCommand)
 )
 
 func (f *Frontend) SetConfAndCardanoLib(conf config.Config,

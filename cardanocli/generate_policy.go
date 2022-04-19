@@ -14,14 +14,16 @@ type CardanoLib struct {
 }
 
 type TransactionParams struct {
-	TxHash      string
-	Txix        string
-	Funds       string
-	Fee         string
-	Output      string
-	PaymentAddr string
-	PolicyID    string
-	ID          string
+	TxHash         string
+	Txix           string
+	Funds          string
+	Fee            string
+	Output         string
+	PaymentAddr    string
+	PolicyID       string
+	ID             string
+	Receiver       string
+	ReceiverOutput string
 }
 
 /*func (c *CardanoLib) GeneratePaymentFiles() (err error) {

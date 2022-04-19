@@ -9,43 +9,30 @@ import (
 )
 
 type CardanoLib struct {
-	FilePaths         FilePaths
 	TransactionParams TransactionParams
 }
 
-type FilePaths struct {
-	PaymentVerifyKeyFile      string
-	PaymentSignKeyFile        string
-	PaymentAddrFile           string
-	PolicyVerificationkeyFile string
-	PolicySigningKeyFile      string
-	PolicyDirName             string
-	PolicyScriptFile          string
-	PolicyIDFile              string
-	ProtocolParametersFile    string
-	RawTransactionFile        string
-	SignedTransactionFile     string
-}
-
 type TransactionParams struct {
-	TxHash string
-	Txix   string
-	Funds  string
-	Fee    string
-	Output string
+	TxHash      string
+	Txix        string
+	Funds       string
+	Fee         string
+	Output      string
+	PaymentAddr string
+	PolicyID    string
 }
 
 func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {
 	err = exec.Command("cardano-cli", "address", "key-gen",
-		"--verification-key-file", c.FilePaths.PaymentVerifyKeyFile,
-		"--signing-key-file", c.FilePaths.PaymentSignKeyFile).Run()
+		"--verification-key-file", PaymentVerifyKeyFile,
+		"--signing-key-file", PaymentSignKeyFile).Run()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
 	err = exec.Command("cardano-cli", "address", "build", "--payment-verification-key-file",
-		c.FilePaths.PaymentVerifyKeyFile, "--out-file", c.FilePaths.PaymentAddrFile, "--testnet-magic", id).Run()
+		PaymentVerifyKeyFile, "--out-file", PaymentAddrFile, "--testnet-magic", id).Run()
 	if err != nil {
 		log.Println(err)
 		return err
@@ -55,19 +42,19 @@ func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {
 }
 
 func (c *CardanoLib) GeneratePolicy() (err error) {
-	if err = os.MkdirAll("./"+c.FilePaths.PolicyDirName, os.ModePerm); err != nil {
+	if err = os.MkdirAll("./"+PolicyDirName, os.ModePerm); err != nil {
 		log.Println(err)
 		return err
 	}
 
 	err = exec.Command("cardano-cli", "address", "key-gen", "--verification-key-file",
-		c.FilePaths.PolicyVerificationkeyFile, "--signing-key-file", c.FilePaths.PolicySigningKeyFile).Run()
+		PolicyVerificationkeyFile, "--signing-key-file", PolicySigningKeyFile).Run()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	policyScript, err := os.Create(c.FilePaths.PolicyScriptFile)
+	policyScript, err := os.Create(PolicyScriptFile)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -79,7 +66,7 @@ func (c *CardanoLib) GeneratePolicy() (err error) {
 
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "address", "key-hash",
-		"--payment-verification-key-file", c.FilePaths.PolicyVerificationkeyFile)
+		"--payment-verification-key-file", PolicyVerificationkeyFile)
 	cmd.Stdout = &buf
 	if err = cmd.Start(); err != nil {
 		panic(err)
@@ -95,7 +82,7 @@ func (c *CardanoLib) GeneratePolicy() (err error) {
 }
 
 func (c *CardanoLib) GeneratePolicyID() error {
-	policyIdFile, err := os.Create(c.FilePaths.PolicyIDFile)
+	policyIdFile, err := os.Create(PolicyIDFile)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -104,7 +91,7 @@ func (c *CardanoLib) GeneratePolicyID() error {
 
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "transaction", "policyid",
-		"--script-file", "./"+c.FilePaths.PolicyScriptFile)
+		"--script-file", "./"+PolicyScriptFile)
 	cmd.Stdout = &buf
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
@@ -118,7 +105,7 @@ func (c *CardanoLib) GeneratePolicyID() error {
 
 func (c *CardanoLib) GenerateProtocol(id string) error {
 	err := exec.Command("cardano-cli", "query", "protocol-parameters",
-		"--testnet-magic", id, "--out-file", c.FilePaths.ProtocolParametersFile).Run()
+		"--testnet-magic", id, "--out-file", ProtocolParametersFile).Run()
 	if err != nil {
 		log.Println(err)
 		return err

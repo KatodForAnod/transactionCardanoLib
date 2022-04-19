@@ -24,7 +24,7 @@ type TransactionParams struct {
 	ID          string
 }
 
-func (c *CardanoLib) GeneratePaymentFiles() (err error) {
+/*func (c *CardanoLib) GeneratePaymentFiles() (err error) {
 	err = exec.Command("cardano-cli", "address", "key-gen",
 		"--verification-key-file", PaymentVerifyKeyFile,
 		"--signing-key-file", PaymentSignKeyFile).Run()
@@ -49,7 +49,7 @@ func (c *CardanoLib) GeneratePaymentFiles() (err error) {
 	c.TransactionParams.PaymentAddr = string(addr)
 
 	return nil
-}
+}*/
 
 func (c *CardanoLib) GeneratePolicy() (err error) {
 	if err = os.MkdirAll("./"+PolicyDirName, os.ModePerm); err != nil {
@@ -131,14 +131,6 @@ func (c *CardanoLib) UseExistPolicy(conf config.Config) error {
 	PolicyScriptFile = conf.PolicyScriptFilePath
 	PolicySigningKeyFile = conf.PolicySigningFilePath
 	PolicyVerificationkeyFile = conf.PolicyVerificationFilePath
-
-	addr, err := os.ReadFile(PaymentAddrFile)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	c.TransactionParams.PaymentAddr = string(addr)
 
 	policyId, err := os.ReadFile(PolicyIDFile)
 	if err != nil {

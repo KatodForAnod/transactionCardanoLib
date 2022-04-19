@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"transactionCardanoLib/config"
 )
 
 type CardanoLib struct {
@@ -20,9 +21,10 @@ type TransactionParams struct {
 	Output      string
 	PaymentAddr string
 	PolicyID    string
+	ID          string
 }
 
-func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {
+func (c *CardanoLib) GeneratePaymentFiles() (err error) {
 	err = exec.Command("cardano-cli", "address", "key-gen",
 		"--verification-key-file", PaymentVerifyKeyFile,
 		"--signing-key-file", PaymentSignKeyFile).Run()
@@ -32,11 +34,19 @@ func (c *CardanoLib) GeneratePaymentFiles(id string) (err error) {
 	}
 
 	err = exec.Command("cardano-cli", "address", "build", "--payment-verification-key-file",
-		PaymentVerifyKeyFile, "--out-file", PaymentAddrFile, "--testnet-magic", id).Run()
+		PaymentVerifyKeyFile, "--out-file", PaymentAddrFile, "--testnet-magic", c.TransactionParams.ID).Run()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
+	addr, err := os.ReadFile(PaymentAddrFile)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	c.TransactionParams.PaymentAddr = string(addr)
 
 	return nil
 }
@@ -98,14 +108,60 @@ func (c *CardanoLib) GeneratePolicyID() error {
 	}
 	cmd.Wait()
 
-	policyIdFile.WriteString(strings.ReplaceAll(buf.String(), "\n", ""))
+	body := strings.ReplaceAll(buf.String(), "\n", "")
+	policyIdFile.WriteString(body)
+
+	c.TransactionParams.PolicyID = body
 
 	return nil
 }
 
-func (c *CardanoLib) GenerateProtocol(id string) error {
+func (c *CardanoLib) GenerateProtocol() error {
 	err := exec.Command("cardano-cli", "query", "protocol-parameters",
-		"--testnet-magic", id, "--out-file", ProtocolParametersFile).Run()
+		"--testnet-magic", c.TransactionParams.ID, "--out-file", ProtocolParametersFile).Run()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (c *CardanoLib) UseExistPolicy(conf config.Config) error {
+	PolicyScriptFile = conf.PolicyScriptFilePath
+	PolicySigningKeyFile = conf.PolicySigningFilePath
+	PolicyVerificationkeyFile = conf.PolicyVerificationFilePath
+
+	addr, err := os.ReadFile(PaymentAddrFile)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	c.TransactionParams.PaymentAddr = string(addr)
+
+	policyId, err := os.ReadFile(PolicyIDFile)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	c.TransactionParams.PaymentAddr = string(policyId)
+	return nil
+}
+
+func (c *CardanoLib) GeneratePolicyFiles() error {
+	err := c.GenerateProtocol()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	err = c.GeneratePolicy()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	err = c.GeneratePolicyID()
 	if err != nil {
 		log.Println(err)
 		return err

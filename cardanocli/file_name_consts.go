@@ -1,6 +1,6 @@
 package cardanocli
 
-const (
+var (
 	PolicyDirName             = "policy"
 	RawTransactionFile        = "matx.raw"                       // Raw transaction to mint token
 	SignedTransactionFile     = "matx.signed"                    // Signed transaction to mint token

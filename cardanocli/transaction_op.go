@@ -12,10 +12,10 @@ import (
 	"transactionCardanoLib/config"
 )
 
-func (c *CardanoLib) CardanoQueryUtxo(id string) (cliOutPut string, errorOutput []string, err error) {
+func (c *CardanoLib) CardanoQueryUtxo() (cliOutPut string, errorOutput []string, err error) {
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "query", "utxo",
-		"--address", c.TransactionParams.PaymentAddr, "--testnet-magic", id)
+		"--address", c.TransactionParams.PaymentAddr, "--testnet-magic", c.TransactionParams.ID)
 	cmd.Stdout = &buf
 	stderr, _ := cmd.StderrPipe()
 
@@ -71,11 +71,11 @@ func (c *CardanoLib) TransactionBuild(tokens []config.Token) (errorOutput []stri
 	return errorOutput, nil
 }
 
-func (c *CardanoLib) CalculateFee(id string) (fee string, errorOutput []string, err error) {
+func (c *CardanoLib) CalculateFee() (fee string, errorOutput []string, err error) {
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "transaction", "calculate-min-fee",
 		"--tx-body-file", RawTransactionFile, "--tx-in-count", "1",
-		"--tx-out-count", "1", "--witness-count", "2", "--testnet-magic", id,
+		"--tx-out-count", "1", "--witness-count", "2", "--testnet-magic", c.TransactionParams.ID,
 		"--protocol-params-file", ProtocolParametersFile)
 	cmd.Stdout = &buf
 	stderr, _ := cmd.StderrPipe()
@@ -121,11 +121,11 @@ func (c *CardanoLib) CalculateOutPut() (string, error) {
 	return strconv.Itoa(int(output)), nil
 }
 
-func (c *CardanoLib) TransactionSign(id string) (errorOutput []string, err error) {
+func (c *CardanoLib) TransactionSign() (errorOutput []string, err error) {
 	cmd := exec.Command("cardano-cli", "transaction", "sign",
 		"--signing-key-file", PaymentSignKeyFile,
 		"--signing-key-file", PolicySigningKeyFile,
-		"--testnet-magic", id, "--tx-body-file", RawTransactionFile,
+		"--testnet-magic", c.TransactionParams.ID, "--tx-body-file", RawTransactionFile,
 		"--out-file", SignedTransactionFile)
 	stderr, _ := cmd.StderrPipe()
 
@@ -148,10 +148,10 @@ func (c *CardanoLib) TransactionSign(id string) (errorOutput []string, err error
 	return errorOutput, nil
 }
 
-func (c *CardanoLib) TransactionSubmit(id string) (errorOutput []string, err error) {
+func (c *CardanoLib) TransactionSubmit() (errorOutput []string, err error) {
 	cmd := exec.Command("cardano-cli", "transaction", "submit",
 		"--tx-file", SignedTransactionFile,
-		"--testnet-magic", id)
+		"--testnet-magic", c.TransactionParams.ID)
 	stderr, _ := cmd.StderrPipe()
 
 	if err := cmd.Start(); err != nil {

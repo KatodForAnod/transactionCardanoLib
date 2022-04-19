@@ -38,6 +38,14 @@ func (f *Frontend) SetConfAndCardanoLib(conf config.Config,
 	cardanoLib cardanocli.CardanoLib) {
 	f.conf = conf
 	f.cardanoLib = cardanoLib
+
+	f.cardanoLib.TransactionParams.ID = conf.ID
+	f.cardanoLib.TransactionParams.PaymentAddr = conf.PaymentAddress
+	if f.conf.UsingExistingPolicy {
+		f.cardanoLib.UseExistPolicy(conf)
+	} else {
+		f.cardanoLib.GeneratePolicyFiles()
+	}
 }
 
 func (f *Frontend) Start() error {
@@ -64,7 +72,7 @@ func (f *Frontend) Start() error {
 func (f *Frontend) switcher(command int) error {
 	switch command {
 	case buildTransaction:
-		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo(f.conf.ID)
+		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo()
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {
@@ -94,7 +102,7 @@ func (f *Frontend) switcher(command int) error {
 			return err
 		}
 
-		fee, errOutput, err := f.cardanoLib.CalculateFee(f.conf.ID)
+		fee, errOutput, err := f.cardanoLib.CalculateFee()
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {
@@ -120,7 +128,7 @@ func (f *Frontend) switcher(command int) error {
 			return err
 		}
 	case signTransaction:
-		errOutput, err := f.cardanoLib.TransactionSign(f.conf.ID)
+		errOutput, err := f.cardanoLib.TransactionSign()
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {
@@ -129,7 +137,7 @@ func (f *Frontend) switcher(command int) error {
 			return err
 		}
 	case submitTransaction:
-		errOutput, err := f.cardanoLib.TransactionSubmit(f.conf.ID)
+		errOutput, err := f.cardanoLib.TransactionSubmit()
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {
@@ -138,7 +146,7 @@ func (f *Frontend) switcher(command int) error {
 			return err
 		}
 	case showCardanoUtxo:
-		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo(f.conf.ID)
+		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo()
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {
@@ -147,23 +155,6 @@ func (f *Frontend) switcher(command int) error {
 			return err
 		}
 		fmt.Println(cliOut)
-	case generatePolicyFiles:
-		f.cardanoLib.GeneratePaymentFiles("1097911063")
-		err := f.cardanoLib.GenerateProtocol(f.conf.ID)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		err = f.cardanoLib.GeneratePolicy()
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		err = f.cardanoLib.GeneratePolicyID()
-		if err != nil {
-			log.Println(err)
-			return err
-		}
 	default:
 		fmt.Println("unsupported command")
 	}

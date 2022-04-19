@@ -111,7 +111,7 @@ func (f *Frontend) switcher(command int) error {
 		}
 		f.cardanoLib.TransactionParams.Output = output
 
-		errOutput, err = f.cardanoLib.TransactionBuild(tokenNames)
+		errOutput, err = f.cardanoLib.TransactionBuild(f.conf.Token)
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {

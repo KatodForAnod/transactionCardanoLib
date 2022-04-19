@@ -40,6 +40,8 @@ func (f *Frontend) SetConfAndCardanoLib(conf config.Config,
 
 	f.cardanoLib.TransactionParams.ID = conf.ID                      // default init var
 	f.cardanoLib.TransactionParams.PaymentAddr = conf.PaymentAddress // default init var
+	cardanocli.PaymentSignKeyFile = f.conf.PaymentSKeyFilePath       // default init var
+	cardanocli.PaymentVerifyKeyFile = f.conf.PaymentVKeyFilePath     // default init var
 
 	if f.conf.UsingExistingPolicy {
 		f.cardanoLib.UseExistPolicy(conf)

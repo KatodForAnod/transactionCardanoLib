@@ -275,7 +275,14 @@ func (f *Frontend) switcherSendTokens(command int) error {
 			return err
 		}
 	case signTransaction:
-
+		errOutput, err := f.cardanoLib.TransactionSignSendingToken()
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
 	case submitTransaction:
 
 	case showCardanoUtxo:

@@ -5,6 +5,9 @@ var (
 	RawTransactionFile    = "matx.raw"    // Raw transaction to mint token
 	SignedTransactionFile = "matx.signed" // Signed transaction to mint token
 
+	RawTransactionSendTokenFile    = "rec_matx.raw"
+	SignedTransactionSendTokenFile = "rec_matx.signed"
+
 	MetadataAttrFile = "metadata.json" // Metadata to specify NFT attributes
 	PaymentAddrFile  = "payment.addr"  // Address to send/receive
 
@@ -15,6 +18,4 @@ var (
 	PolicyVerificationkeyFile = PolicyDirName + "/policy.vkey"   // Policy verification key
 	PolicyIDFile              = PolicyDirName + "/policyID"      // File which holds the policy ID
 	ProtocolParametersFile    = "protocol.json"                  // Protocol parameters
-
-	RawTransactionSendTokenFile = "rec_matx.raw"
 )

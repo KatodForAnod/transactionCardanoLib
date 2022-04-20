@@ -86,6 +86,10 @@ func (f *Frontend) Start() error {
 					return err
 				}
 			case sendTokens:
+				if err := f.switcherSendTokens(choiceCommandTransaction); err != nil {
+					log.Println(err)
+					return err
+				}
 			}
 		}
 	}
@@ -184,7 +188,83 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 	return nil
 }
 
-/*func (f *Frontend) switcherSendTokens(command int) error {
+func (f *Frontend) switcherSendTokens(command int) error {
+	switch command {
+	case buildTransaction:
+		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo()
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
+		fmt.Println(cliOut)
+
+		f.cardanoLib.TransactionParams.Fee = "0"
+		f.cardanoLib.TransactionParams.Output = "0"
+
+		fmt.Println("input txHash")
+		fmt.Scan(&f.cardanoLib.TransactionParams.TxHash)
+		fmt.Println("input txIx")
+		fmt.Scan(&f.cardanoLib.TransactionParams.Txix)
+		fmt.Println("input amount")
+		fmt.Scan(&f.cardanoLib.TransactionParams.Funds)
+		fmt.Println("input receiver")
+		fmt.Scan(&f.cardanoLib.TransactionParams.Receiver)
+		fmt.Println("input receiverOutput")
+		fmt.Scan(&f.cardanoLib.TransactionParams.ReceiverOutput)
+
+		var amount int
+		fmt.Println("how many tokens do u have?")
+		fmt.Scan(&amount)
+
+		var tokens []config.Token
+		for i := 0; i < amount; i++ {
+			var token config.Token
+			fmt.Println("input name of token")
+			fmt.Scan(&token.TokenName)
+			fmt.Println("input amount of token")
+			fmt.Scan(&token.TokenAmount)
+			tokens = append(tokens, token)
+		}
+
+		var sendToken config.Token
+		fmt.Println("input name of token to send")
+		fmt.Scan(&sendToken.TokenName)
+		fmt.Println("input amount of token to send")
+		fmt.Scan(&sendToken.TokenAmount)
+
+		var countLovelaceSend string
+		fmt.Println("count lovelace to send")
+		fmt.Scan(&countLovelaceSend)
+
+		errOutput, err = f.cardanoLib.TransactionBuildSendingToken(tokens, sendToken)
+		if err != nil {
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+
+			log.Println(err)
+			return err
+		}
+
+		fee, errOutput, err := f.cardanoLib.CalculateFee()
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
+		f.cardanoLib.TransactionParams.Fee = fee
+
+		output, err := f.cardanoLib.CalculateOutPut()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		f.cardanoLib.TransactionParams.Output = output
 
 		errOutput, err = f.cardanoLib.TransactionBuild(f.conf.Token)
 		if err != nil {
@@ -199,7 +279,15 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 	case submitTransaction:
 
 	case showCardanoUtxo:
-
+		cliOut, errOutput, err := f.cardanoLib.CardanoQueryUtxo()
+		if err != nil {
+			log.Println(err)
+			for _, s := range errOutput {
+				fmt.Println(s)
+			}
+			return err
+		}
+		fmt.Println(cliOut)
 	default:
 		fmt.Println("unsupported command")
 	}

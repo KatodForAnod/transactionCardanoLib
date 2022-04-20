@@ -260,3 +260,28 @@ func (c *CardanoLib) TransactionSignSendingToken() (errorOutput []string, err er
 
 	return errorOutput, nil
 }
+
+func (c *CardanoLib) TransactionSendTokenSubmit() (errorOutput []string, err error) {
+	cmd := exec.Command("cardano-cli", "transaction", "submit",
+		"--tx-file", SignedTransactionSendTokenFile,
+		"--testnet-magic", c.TransactionParams.ID)
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		log.Println(err)
+		return errorOutput, err
+	}
+
+	cmd.Wait()
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		errorOutput = append(errorOutput, scanner.Text())
+	}
+
+	if len(errorOutput) > 0 {
+		return []string{}, fmt.Errorf("TransactionSubmit error")
+	}
+
+	return []string{}, nil
+}

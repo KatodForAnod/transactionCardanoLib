@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"transactionCardanoLib/cardanocli"
 	"transactionCardanoLib/config"
@@ -10,49 +9,38 @@ import (
 
 func main() {
 	log.SetFlags(log.Lshortfile)
-	conf, err := config.LoadConfig()
-	if err != nil {
-		panic(1)
-	}
 
-	token := conf.Token
-	if !token.UsingExistingPolicy {
-		_, _, paymentAddrFileName, err := cardanocli.GeneratePaymentAddr(conf.Token.ID)
-		if err != nil {
-			log.Println(err)
-			panic(2)
-		}
-
-		fileContent, err := ioutil.ReadFile(paymentAddrFileName)
-		if err != nil {
-			log.Println(err)
-			panic(3)
-		}
-		conf.Token.PaymentAddress = string(fileContent)
-
-		conf.Token.PolicyVerificationFilePath,
-			conf.Token.PolicySigningFilePath,
-			conf.Token.PolicyScriptFilePath,
-			err = cardanocli.GeneratePolicy()
-		if err != nil {
-			log.Println(err)
-			panic(4)
-		}
-
-		policyIDFilePath, err := cardanocli.GeneratePolicyID()
-		if err != nil {
-			log.Println(err)
-			panic(5)
-		}
-
-		fileContent, err = ioutil.ReadFile(policyIDFilePath)
-		if err != nil {
-			log.Println(err)
-			panic(6)
-		}
-		conf.Token.PolicyID = string(fileContent)
+	cardanoLib := cardanocli.CardanoLib{
+		TransactionParams: cardanocli.TransactionParams{},
 	}
 
 	front := view.Frontend{}
-	front.Start(conf)
+	conf, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	/*conf := config.Config{
+		ID:                         "1097911063",
+		Token:                      []config.Token{
+			{
+				TokenName:   hex.EncodeToString([]byte("exampleToken")),
+				TokenAmount: "10001",
+			},
+			{
+				TokenName:   hex.EncodeToString([]byte("exampleToken2")),
+				TokenAmount: "10001",
+			},
+		},
+		PaymentAddress:             "",
+		PaymentVKeyFilePath: cardanocli.PaymentVerifyKeyFile,
+		PaymentSKeyFilePath: cardanocli.PaymentSignKeyFile,
+		UsingExistingPolicy:        true,
+		PolicyID:                   "",
+		PolicyScriptFilePath:       cardanocli.PolicyScriptFile,
+		PolicySigningFilePath:      cardanocli.PolicySigningKeyFile,
+		PolicyVerificationFilePath: cardanocli.PolicyVerificationkeyFile,
+	}*/
+	front.SetConfAndCardanoLib(conf, cardanoLib)
+
+	front.Start()
 }

@@ -175,7 +175,7 @@ func (c *CardanoLib) TransactionSubmit() (errorOutput []string, err error) {
 
 func (c *CardanoLib) TransactionBuildSendingToken(tokens []config.Token,
 	sendToken config.Token) (errorOutput []string, err error) {
-	for _, token := range tokens {
+	for i, token := range tokens {
 		if token.TokenName == sendToken.TokenName {
 			tokenAll, err := strconv.ParseInt(token.TokenAmount, 10, 64)
 			if err != nil {
@@ -190,7 +190,10 @@ func (c *CardanoLib) TransactionBuildSendingToken(tokens []config.Token,
 			}
 
 			amountLeft := strconv.Itoa(int(tokenAll - tokenSendAmount))
-			token.TokenAmount = amountLeft
+			tokens[i].TokenAmount = amountLeft
+			break
+		} else if i == len(tokens) {
+			return errorOutput, errors.New("token not found")
 		}
 	}
 

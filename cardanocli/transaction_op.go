@@ -287,3 +287,59 @@ func (c *CardanoLib) TransactionSendTokenSubmit() (errorOutput []string, err err
 
 	return []string{}, nil
 }
+
+func (c *CardanoLib) CalculateFeeSendingToken() (fee string, errorOutput []string, err error) {
+	var buf bytes.Buffer
+	cmd := exec.Command("cardano-cli", "transaction", "calculate-min-fee",
+		"--tx-body-file", RawTransactionFile, "--tx-in-count", "1",
+		"--tx-out-count", "2", "--witness-count", "1", "--testnet-magic", c.TransactionParams.ID,
+		"--protocol-params-file", ProtocolParametersFile)
+	cmd.Stdout = &buf
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		log.Println(err)
+		return "", errorOutput, err
+	}
+
+	cmd.Wait()
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		errorOutput = append(errorOutput, scanner.Text())
+	}
+
+	if len(errorOutput) > 0 {
+		return "", errorOutput, fmt.Errorf("CalculateFee error")
+	}
+
+	arr := strings.Split(buf.String(), " ")
+	if len(arr) < 2 {
+		return "", errorOutput, errors.New("split error")
+	}
+
+	return arr[0], errorOutput, err
+}
+
+func (c *CardanoLib) CalculateOutPutSendingToken() (string, error) {
+	funds, err := strconv.ParseInt(c.TransactionParams.Funds, 10, 64)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	fee, err := strconv.ParseInt(c.TransactionParams.Fee, 10, 64)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	receiverOutput, err := strconv.ParseInt(c.TransactionParams.ReceiverOutput, 10, 64)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	output := funds - fee - receiverOutput
+	return strconv.Itoa(int(output)), nil
+}

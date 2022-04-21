@@ -245,7 +245,7 @@ func (f *Frontend) switcherSendTokens(command int) error {
 			return err
 		}
 
-		fee, errOutput, err := f.cardanoLib.CalculateFee()
+		fee, errOutput, err := f.cardanoLib.CalculateFeeSendingToken()
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {
@@ -255,14 +255,14 @@ func (f *Frontend) switcherSendTokens(command int) error {
 		}
 		f.cardanoLib.TransactionParams.Fee = fee
 
-		output, err := f.cardanoLib.CalculateOutPut()
+		output, err := f.cardanoLib.CalculateOutPutSendingToken()
 		if err != nil {
 			log.Println(err)
 			return err
 		}
 		f.cardanoLib.TransactionParams.Output = output
 
-		errOutput, err = f.cardanoLib.TransactionBuild(f.conf.Token)
+		errOutput, err = f.cardanoLib.TransactionBuildSendingToken(tokens, sendToken)
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {

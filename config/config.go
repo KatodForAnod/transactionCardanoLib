@@ -28,17 +28,12 @@ const cConfigPath = "conf.config"
 
 func LoadConfig() (loadedConfig Config, err error) {
 	log.Println("Start loading config...")
-	usrHomePath, err := goconfig.GetUserHomePath()
+	/*usrHomePath, err := goconfig.GetUserHomePath()
 	if err != nil {
 		log.Println(err)
 		return loadedConfig, err
-	}
+	}*/
 
 	err = goconfig.LoadConfig(cConfigPath, &loadedConfig)
-	if err == nil {
-		return loadedConfig, nil
-	}
-
-	log.Println("Config", usrHomePath+cConfigPath, "not found")
 	return loadedConfig, err
 }

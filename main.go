@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"log"
 	"transactionCardanoLib/cardanocli"
 	"transactionCardanoLib/config"
@@ -19,6 +20,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	for i, token := range conf.Token {
+		conf.Token[i].TokenName = hex.EncodeToString([]byte(token.TokenName))
+	}
+
 	/*conf := config.Config{
 		ID:                         "1097911063",
 		Token:                      []config.Token{

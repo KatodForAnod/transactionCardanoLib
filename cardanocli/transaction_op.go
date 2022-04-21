@@ -216,10 +216,10 @@ func (c *CardanoLib) TransactionBuildSendingToken(tokens []config.Token,
 		"--tx-out", txOut,
 		"--tx-out", txOut2,
 		"--out-file", RawTransactionSendTokenFile)
-	//stderr, _ := cmd.StderrPipe()
+	stderr, _ := cmd.StderrPipe()
 
 	fmt.Println(cmd.String())
-	/*if err := cmd.Start(); err != nil {
+	if err := cmd.Start(); err != nil {
 		log.Println(err)
 		return errorOutput, err
 	}
@@ -233,8 +233,7 @@ func (c *CardanoLib) TransactionBuildSendingToken(tokens []config.Token,
 		return errorOutput, fmt.Errorf("TransactionBuild error")
 	}
 
-	return errorOutput, nil*/
-	return errorOutput, errors.New("not realized yet")
+	return errorOutput, nil
 }
 
 func (c *CardanoLib) TransactionSignSendingToken() (errorOutput []string, err error) {

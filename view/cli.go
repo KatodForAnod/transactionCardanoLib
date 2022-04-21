@@ -235,10 +235,6 @@ func (f *Frontend) switcherSendTokens(command int) error {
 		fmt.Println("input amount of token to send")
 		fmt.Scan(&sendToken.TokenAmount)
 
-		var countLovelaceSend string
-		fmt.Println("count lovelace to send")
-		fmt.Scan(&countLovelaceSend)
-
 		errOutput, err = f.cardanoLib.TransactionBuildSendingToken(tokens, sendToken)
 		if err != nil {
 			for _, s := range errOutput {

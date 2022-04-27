@@ -19,6 +19,47 @@ type SendTokens struct {
 	f             files.Files
 }
 
+func (c *SendTokens) Init(base BaseTransactionParams,
+	processParams TransactionParams,
+	f files.Files) {
+	c.base = base
+	c.f = f
+	c.processParams = processParams
+}
+
+func (c *SendTokens) SetBaseParams(base BaseTransactionParams) {
+	c.base = base
+}
+
+func (c *SendTokens) SetProcessParams(processParams TransactionParams) {
+	c.processParams = processParams
+}
+
+func (c *SendTokens) SetFileParams(f files.Files) {
+	c.f = f
+}
+
+func (c *SendTokens) CardanoQueryUtxo() (cliOutPut string, errorOutput []string, err error) {
+	var buf bytes.Buffer
+	cmd := exec.Command("cardano-cli", "query", "utxo",
+		"--address", c.base.PaymentAddr, "--testnet-magic", c.base.ID)
+	cmd.Stdout = &buf
+	stderr, _ := cmd.StderrPipe()
+
+	if err = cmd.Start(); err != nil {
+		log.Println(err)
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			errorOutput = append(errorOutput, scanner.Text())
+		}
+		return "", errorOutput, err
+	}
+
+	cmd.Wait()
+
+	return buf.String(), errorOutput, nil
+}
+
 func (c *SendTokens) TransactionBuild(tokens []config.Token,
 	sendToken config.Token) (errorOutput []string, err error) {
 	for i, token := range tokens {
@@ -134,7 +175,7 @@ func (c *SendTokens) TransactionSubmit() (errorOutput []string, err error) {
 	return []string{}, nil
 }
 
-func (c *SendTokens) CalculateFee() (fee string, errorOutput []string, err error) {
+func (c *SendTokens) CalculateFee() (errorOutput []string, err error) {
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "transaction", "calculate-min-fee",
 		"--tx-body-file", c.f.GetRawTransactionFile(), "--tx-in-count", "1",
@@ -145,7 +186,7 @@ func (c *SendTokens) CalculateFee() (fee string, errorOutput []string, err error
 
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
-		return "", errorOutput, err
+		return errorOutput, err
 	}
 
 	cmd.Wait()
@@ -156,36 +197,38 @@ func (c *SendTokens) CalculateFee() (fee string, errorOutput []string, err error
 	}
 
 	if len(errorOutput) > 0 {
-		return "", errorOutput, fmt.Errorf("CalculateFee error")
+		return errorOutput, fmt.Errorf("CalculateFee error")
 	}
 
 	arr := strings.Split(buf.String(), " ")
 	if len(arr) < 2 {
-		return "", errorOutput, errors.New("split error")
+		return errorOutput, errors.New("split error")
 	}
 
-	return arr[0], errorOutput, err
+	c.processParams.Fee = arr[0]
+	return errorOutput, err
 }
 
-func (c *SendTokens) CalculateOutPut() (string, error) {
+func (c *SendTokens) CalculateOutPut() error {
 	funds, err := strconv.ParseInt(c.processParams.Funds, 10, 64)
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return err
 	}
 
 	fee, err := strconv.ParseInt(c.processParams.Fee, 10, 64)
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return err
 	}
 
 	receiverOutput, err := strconv.ParseInt(c.processParams.ReceiverOutput, 10, 64)
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return err
 	}
 
 	output := funds - fee - receiverOutput
-	return strconv.Itoa(int(output)), nil
+	c.processParams.Output = strconv.Itoa(int(output))
+	return nil
 }

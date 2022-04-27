@@ -19,7 +19,25 @@ type CreateTokens struct {
 	f             files.Files
 }
 
-//func Init????
+func (c *CreateTokens) Init(base BaseTransactionParams,
+	processParams TransactionParams,
+	f files.Files) {
+	c.base = base
+	c.f = f
+	c.processParams = processParams
+}
+
+func (c *CreateTokens) SetBaseParams(base BaseTransactionParams) {
+	c.base = base
+}
+
+func (c *CreateTokens) SetProcessParams(processParams TransactionParams) {
+	c.processParams = processParams
+}
+
+func (c *CreateTokens) SetFileParams(f files.Files) {
+	c.f = f
+}
 
 func (c *CreateTokens) CardanoQueryUtxo() (cliOutPut string, errorOutput []string, err error) {
 	var buf bytes.Buffer
@@ -80,7 +98,7 @@ func (c *CreateTokens) TransactionBuild(tokens []config.Token) (errorOutput []st
 	return errorOutput, nil
 }
 
-func (c *CreateTokens) CalculateFee() (fee string, errorOutput []string, err error) {
+func (c *CreateTokens) CalculateFee() (errorOutput []string, err error) {
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "transaction", "calculate-min-fee",
 		"--tx-body-file", c.f.GetRawTransactionFile(), "--tx-in-count", "1",
@@ -91,7 +109,7 @@ func (c *CreateTokens) CalculateFee() (fee string, errorOutput []string, err err
 
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
-		return "", errorOutput, err
+		return errorOutput, err
 	}
 
 	cmd.Wait()
@@ -102,32 +120,35 @@ func (c *CreateTokens) CalculateFee() (fee string, errorOutput []string, err err
 	}
 
 	if len(errorOutput) > 0 {
-		return "", errorOutput, fmt.Errorf("CalculateFee error")
+		return errorOutput, fmt.Errorf("CalculateFee error")
 	}
 
 	arr := strings.Split(buf.String(), " ")
 	if len(arr) < 2 {
-		return "", errorOutput, errors.New("split error")
+		return errorOutput, errors.New("split error")
 	}
 
-	return arr[0], errorOutput, err
+	c.processParams.Fee = arr[0]
+
+	return errorOutput, err
 }
 
-func (c *CreateTokens) CalculateOutPut() (string, error) {
+func (c *CreateTokens) CalculateOutPut() error {
 	funds, err := strconv.ParseInt(c.processParams.Funds, 10, 64)
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return err
 	}
 
 	fee, err := strconv.ParseInt(c.processParams.Fee, 10, 64)
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return err
 	}
 
 	output := funds - fee
-	return strconv.Itoa(int(output)), nil
+	c.processParams.Output = strconv.Itoa(int(output))
+	return nil
 }
 
 func (c *CreateTokens) TransactionSign() (errorOutput []string, err error) {

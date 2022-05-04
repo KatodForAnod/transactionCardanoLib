@@ -62,6 +62,16 @@ func (c *SendTokens) CardanoQueryUtxo() (cliOutPut string, errorOutput []string,
 
 func (c *SendTokens) TransactionBuild(tokens []config.Token,
 	sendToken config.Token) (errorOutput []string, err error) {
+	cmd := exec.Command("cardano-cli", "query", "protocol-parameters",
+		"--testnet-magic", c.base.ID,
+		"--out-file", c.f.GetProtocolParametersFile())
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		log.Println(err)
+		return errorOutput, err
+	}
+
 	for i, token := range tokens {
 		if token.TokenName == sendToken.TokenName {
 			tokenAll, err := strconv.ParseInt(token.TokenAmount, 10, 64)
@@ -97,13 +107,13 @@ func (c *SendTokens) TransactionBuild(tokens []config.Token,
 			tokens[i].TokenAmount, c.base.PolicyID, tokens[i].TokenName)
 	}
 
-	cmd := exec.Command("cardano-cli", "transaction", "build-raw",
+	cmd = exec.Command("cardano-cli", "transaction", "build-raw",
 		"--fee", c.processParams.Fee,
 		"--tx-in", c.processParams.TxHash+"#"+c.processParams.Txix,
 		"--tx-out", txOut,
 		"--tx-out", txOut2,
 		"--out-file", c.f.GetRawTransactionSendTokenFile())
-	stderr, _ := cmd.StderrPipe()
+	stderr, _ = cmd.StderrPipe()
 
 	fmt.Println(cmd.String())
 	if err := cmd.Start(); err != nil {

@@ -66,6 +66,16 @@ func (c *CreateTokens) TransactionBuild(tokens []config.Token) (errorOutput []st
 		return errorOutput, errors.New("")
 	}
 
+	cmd := exec.Command("cardano-cli", "query", "protocol-parameters",
+		"--testnet-magic", c.base.ID,
+		"--out-file", c.f.GetProtocolParametersFile())
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		log.Println(err)
+		return errorOutput, err
+	}
+
 	txOut := fmt.Sprintf("%s+%s+", c.base.PaymentAddr, c.processParams.Output)
 	mint := fmt.Sprintf("%s %s.%s", tokens[0].TokenAmount, c.base.PolicyID, tokens[0].TokenName)
 	for i := 1; i < len(tokens); i++ {
@@ -74,12 +84,12 @@ func (c *CreateTokens) TransactionBuild(tokens []config.Token) (errorOutput []st
 	}
 	txOut += mint
 
-	cmd := exec.Command("cardano-cli", "transaction", "build-raw",
+	cmd = exec.Command("cardano-cli", "transaction", "build-raw",
 		"--fee", c.processParams.Fee, "--tx-in",
 		c.processParams.TxHash+"#"+c.processParams.Txix, "--tx-out", txOut, "--mint="+mint,
 		"--minting-script-file", c.f.GetPolicyScriptFile(),
 		"--out-file", c.f.GetRawTransactionFile())
-	stderr, _ := cmd.StderrPipe()
+	stderr, _ = cmd.StderrPipe()
 
 	if err := cmd.Start(); err != nil {
 		log.Println(err)

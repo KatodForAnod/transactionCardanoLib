@@ -15,23 +15,25 @@ type Frontend struct {
 }
 
 const (
-	buildTransaction    = 1
-	signTransaction     = 2
-	exitCommand         = 10
-	showCardanoUtxo     = 3
-	submitTransaction   = 4
-	generatePolicyFiles = 5
-	createTokens        = 6
-	sendTokens          = 7
-	createPolicy        = 8
+	buildTransaction  = 1
+	signTransaction   = 2
+	exitCommand       = 10
+	showCardanoUtxo   = 3
+	submitTransaction = 4
+	createNft         = 9
+	createTokens      = 6
+	sendTokens        = 7
+	createPolicy      = 8
 )
 
 var (
 	startMsg = fmt.Sprintf("%d. Create tokens\n"+
 		"%d. Send tokens\n"+
 		"%d. Create policy\n"+
+		"%d. Create nft\n"+
 		"%d. Exit\n",
-		createTokens, sendTokens, createPolicy, exitCommand)
+		createTokens, sendTokens, createPolicy,
+		createNft, exitCommand)
 
 	transactionOpMsg = fmt.Sprintf("%d. Build transaction\n"+
 		"%d. Sign transaction\n"+
@@ -89,6 +91,11 @@ func (f *Frontend) Start() error {
 				}
 			case createPolicy:
 				if err := f.creatPolicy.GeneratePolicyFiles(); err != nil {
+					log.Println(err)
+					return err
+				}
+			case createNft:
+				if err := f.switcherCreateNft(choiceCommandTransaction); err != nil {
 					log.Println(err)
 					return err
 				}

@@ -16,11 +16,9 @@ type Policy struct {
 	policyID string
 }
 
-func (p *Policy) Init(f files.Files, id string) (err error) {
+func (p *Policy) Init(f files.Files, id string) {
 	p.f = f
 	p.id = id
-
-	return err
 }
 
 func (c *Policy) generatePolicy() (err error) {

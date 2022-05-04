@@ -2,51 +2,51 @@ package main
 
 import (
 	"encoding/hex"
+	"io/ioutil"
 	"log"
 	"transactionCardanoLib/cardanocli"
 	"transactionCardanoLib/config"
+	"transactionCardanoLib/files"
 	"transactionCardanoLib/view"
 )
 
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	cardanoLib := cardanocli.CardanoLib{
-		TransactionParams: cardanocli.TransactionParams{},
-	}
-
-	front := view.Frontend{}
 	conf, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	for i, token := range conf.Token {
 		conf.Token[i].TokenName = hex.EncodeToString([]byte(token.TokenName))
 	}
 
-	/*conf := config.Config{
-		ID:                         "1097911063",
-		Token:                      []config.Token{
-			{
-				TokenName:   hex.EncodeToString([]byte("exampleToken")),
-				TokenAmount: "10001",
-			},
-			{
-				TokenName:   hex.EncodeToString([]byte("exampleToken2")),
-				TokenAmount: "10001",
-			},
-		},
-		PaymentAddress:             "",
-		PaymentVKeyFilePath: cardanocli.PaymentVerifyKeyFile,
-		PaymentSKeyFilePath: cardanocli.PaymentSignKeyFile,
-		UsingExistingPolicy:        true,
-		PolicyID:                   "",
-		PolicyScriptFilePath:       cardanocli.PolicyScriptFile,
-		PolicySigningFilePath:      cardanocli.PolicySigningKeyFile,
-		PolicyVerificationFilePath: cardanocli.PolicyVerificationkeyFile,
-	}*/
-	front.SetConfAndCardanoLib(conf, cardanoLib)
+	f := files.Files{}
+	f.Init(conf)
+
+	policyIdBytes, err := ioutil.ReadFile(conf.PolicyIDFile)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	baseParams := cardanocli.BaseTransactionParams{
+		PaymentAddr: conf.PaymentAddress,
+		PolicyID:    string(policyIdBytes),
+		ID:          conf.ID,
+	}
+
+	createTokens := cardanocli.CreateTokens{}
+	createTokens.Init(baseParams, cardanocli.TransactionParams{}, f)
+
+	sendTokens := cardanocli.SendTokens{}
+	sendTokens.Init(baseParams, cardanocli.TransactionParams{}, f)
+
+	policy := cardanocli.Policy{}
+	policy.Init(f, conf.ID)
+
+	front := view.Frontend{}
+	front.SetConfAndCardanoLib(conf, createTokens, sendTokens, policy)
 
 	front.Start()
 }

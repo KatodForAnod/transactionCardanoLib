@@ -1,12 +1,19 @@
 package view
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"transactionCardanoLib/cardanocli"
 )
 
 func (f *Frontend) switcherCreateNft(command int) error {
+	if !f.conf.UsingExistingPolicy {
+		err := errors.New("does not work without policy")
+		log.Println(err)
+		return err
+	}
+
 	switch command {
 	case buildTransaction:
 		cliOut, errOutput, err := f.sendTokens.CardanoQueryUtxo()

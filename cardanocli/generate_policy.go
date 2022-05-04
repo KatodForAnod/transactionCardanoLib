@@ -20,10 +20,6 @@ func (p *Policy) Init(f files.Files, id string) (err error) {
 	p.f = f
 	p.id = id
 
-	err = p.generatePolicyFiles()
-	if err != nil {
-		log.Println(err)
-	}
 	return err
 }
 
@@ -103,7 +99,7 @@ func (c *Policy) generateProtocol() error {
 	return nil
 }
 
-func (c *Policy) generatePolicyFiles() error {
+func (c *Policy) GeneratePolicyFiles() error {
 	err := c.generateProtocol()
 	if err != nil {
 		log.Println(err)

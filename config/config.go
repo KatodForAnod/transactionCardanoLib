@@ -17,6 +17,8 @@ type Config struct {
 	PolicyScriptFilePath       string `json:"policy_script_file_path"`
 	PolicySigningFilePath      string `json:"policy_signing_file_path"`
 	PolicyVerificationFilePath string `json:"policy_verification_file_path"`
+
+	MetadataAttrFile string `json:"metadata_attr_file"`
 }
 
 type Token struct {

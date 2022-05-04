@@ -53,7 +53,6 @@ func (f *Files) Init(config config.Config) {
 	f.rawTransactionSendTokenFile = "rec_matx.raw"
 	f.signedTransactionSendTokenFile = "rec_matx.signed"
 
-	f.metadataAttrFile = "metadata.json" // Metadata to specify NFT attributes
 	//f.PaymentAddrFile  = "payment.addr"  // Address to send/receive
 
 	f.paymentSignKeyFile = config.PaymentSKeyFilePath
@@ -64,12 +63,15 @@ func (f *Files) Init(config config.Config) {
 		f.policySigningKeyFile = config.PolicySigningFilePath
 		f.policyVerificationkeyFile = config.PolicyVerificationFilePath
 		f.policyIDFile = config.PolicyID // from config should load file
+
+		f.metadataAttrFile = config.MetadataAttrFile
 	} else {
 		f.policyScriptFile = f.policyDirName + "/policy.script"        // Script to generate the policyID
 		f.policySigningKeyFile = f.policyDirName + "/policy.skey"      // Policy signing key
 		f.policyVerificationkeyFile = f.policyDirName + "/policy.vkey" // Policy verification key
-
 		f.policyIDFile = f.policyDirName + "/policyID"
+
+		f.metadataAttrFile = "metadata.json" // Metadata to specify NFT attributes
 	}
 
 	f.protocolParametersFile = "protocol.json" // Protocol parameters

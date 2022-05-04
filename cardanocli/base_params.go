@@ -14,4 +14,5 @@ type TransactionParams struct {
 	Output         string
 	Receiver       string
 	ReceiverOutput string
+	SlotNumber     string
 }

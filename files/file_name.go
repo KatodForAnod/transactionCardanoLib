@@ -62,7 +62,7 @@ func (f *Files) Init(config config.Config) {
 		f.policyScriptFile = config.PolicyScriptFilePath
 		f.policySigningKeyFile = config.PolicySigningFilePath
 		f.policyVerificationkeyFile = config.PolicyVerificationFilePath
-		f.policyIDFile = config.PolicyID // from config should load file
+		f.policyIDFile = config.PolicyIDFile // from config should load file
 
 		f.metadataAttrFile = config.MetadataAttrFile
 	} else {

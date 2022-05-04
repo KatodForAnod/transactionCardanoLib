@@ -13,7 +13,7 @@ type Config struct {
 	PaymentVKeyFilePath string  `json:"payment_v_key_file_path"` //4
 
 	UsingExistingPolicy        bool   `json:"using_existing_policy"`
-	PolicyID                   string `json:"policy_id"`
+	PolicyIDFile               string `json:"policy_id"`
 	PolicyScriptFilePath       string `json:"policy_script_file_path"`
 	PolicySigningFilePath      string `json:"policy_signing_file_path"`
 	PolicyVerificationFilePath string `json:"policy_verification_file_path"`

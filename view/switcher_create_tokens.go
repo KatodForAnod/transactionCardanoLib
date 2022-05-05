@@ -19,17 +19,14 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 		}
 		fmt.Println(cliOut)
 
-		var processParams cardanocli.TransactionParams
+		processParams, _, err := cardanocli.Parse(cliOut)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
 		processParams.Fee = "300000"
 		processParams.Output = "0"
-
-		fmt.Println("input txHash")
-		fmt.Scan(&processParams.TxHash)
-		fmt.Println("input txIx")
-		fmt.Scan(&processParams.Txix)
-		fmt.Println("input amount")
-		fmt.Scan(&processParams.Funds)
-
 		f.createTokens.SetProcessParams(processParams)
 
 		errOutput, err = f.createTokens.TransactionBuild(f.conf.Token)
@@ -93,6 +90,14 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 			return err
 		}
 		fmt.Println(cliOut)
+
+		t, p, err := cardanocli.Parse(cliOut)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		fmt.Println(t, p)
 	default:
 		fmt.Println("unsupported command")
 	}

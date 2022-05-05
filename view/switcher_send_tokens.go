@@ -20,36 +20,21 @@ func (f *Frontend) switcherSendTokens(command int) error {
 		}
 		fmt.Println(cliOut)
 
-		var processParams cardanocli.TransactionParams
+		processParams, tokens, err := cardanocli.Parse(cliOut)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
 		processParams.Fee = "0"
 		processParams.Output = "0"
 
-		fmt.Println("input txHash")
-		fmt.Scan(&processParams.TxHash)
-		fmt.Println("input txIx")
-		fmt.Scan(&processParams.Txix)
-		fmt.Println("input amount")
-		fmt.Scan(&processParams.Funds)
 		fmt.Println("input receiver")
 		fmt.Scan(&processParams.Receiver)
 		fmt.Println("input receiverOutput")
 		fmt.Scan(&processParams.ReceiverOutput)
 
 		f.sendTokens.SetProcessParams(processParams)
-
-		var amount int
-		fmt.Println("how many tokens do u have?")
-		fmt.Scan(&amount)
-
-		var tokens []config.Token
-		for i := 0; i < amount; i++ {
-			var token config.Token
-			fmt.Println("input name of token")
-			fmt.Scan(&token.TokenName)
-			fmt.Println("input amount of token")
-			fmt.Scan(&token.TokenAmount)
-			tokens = append(tokens, token)
-		}
 
 		var sendToken config.Token
 		fmt.Println("input name of token to send")

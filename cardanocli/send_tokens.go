@@ -62,6 +62,11 @@ func (c *SendTokens) CardanoQueryUtxo() (cliOutPut string, errorOutput []string,
 
 func (c *SendTokens) TransactionBuild(tokens []config.Token,
 	sendToken config.Token) (errorOutput []string, err error) {
+	var copyTokens []config.Token
+	for _, token := range tokens {
+		copyTokens = append(copyTokens, token)
+	}
+
 	cmd := exec.Command("cardano-cli", "query", "protocol-parameters",
 		"--testnet-magic", c.base.ID,
 		"--out-file", c.f.GetProtocolParametersFile())
@@ -72,7 +77,7 @@ func (c *SendTokens) TransactionBuild(tokens []config.Token,
 		return errorOutput, err
 	}
 
-	for i, token := range tokens {
+	for i, token := range copyTokens {
 		if token.TokenName == sendToken.TokenName {
 			tokenAll, err := strconv.ParseInt(token.TokenAmount, 10, 64)
 			if err != nil {
@@ -87,9 +92,9 @@ func (c *SendTokens) TransactionBuild(tokens []config.Token,
 			}
 
 			amountLeft := strconv.Itoa(int(tokenAll - tokenSendAmount))
-			tokens[i].TokenAmount = amountLeft
+			copyTokens[i].TokenAmount = amountLeft
 			break
-		} else if i == len(tokens) {
+		} else if i == len(copyTokens) {
 			return errorOutput, errors.New("token not found")
 		}
 	}
@@ -100,11 +105,11 @@ func (c *SendTokens) TransactionBuild(tokens []config.Token,
 	txOut2 := fmt.Sprintf("%s+%s", c.base.PaymentAddr,
 		c.processParams.Output)
 	txOut2 += fmt.Sprintf("+%s %s.%s",
-		tokens[0].TokenAmount, c.base.PolicyID, tokens[0].TokenName)
+		copyTokens[0].TokenAmount, c.base.PolicyID, copyTokens[0].TokenName)
 
-	for i := 1; i < len(tokens); i++ {
+	for i := 1; i < len(copyTokens); i++ {
 		txOut2 += fmt.Sprintf("+ %s %s.%s",
-			tokens[i].TokenAmount, c.base.PolicyID, tokens[i].TokenName)
+			copyTokens[i].TokenAmount, c.base.PolicyID, copyTokens[i].TokenName)
 	}
 
 	cmd = exec.Command("cardano-cli", "transaction", "build-raw",

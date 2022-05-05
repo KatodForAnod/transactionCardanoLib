@@ -20,7 +20,7 @@ func Parse(cliOutput string) (TransactionParams, []config.Token, error) {
 	amountLovelace := vars[2]
 
 	var tokens []config.Token
-	for i := 4; i < len(vars); i += 3 {
+	for i := 4; i < len(vars)-2; i += 3 {
 		policyAndTokenName := strings.Split(vars[i+2], ".")
 		tokenName := policyAndTokenName[1]
 

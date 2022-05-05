@@ -90,14 +90,6 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 			return err
 		}
 		fmt.Println(cliOut)
-
-		t, p, err := cardanocli.Parse(cliOut)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-
-		fmt.Println(t, p)
 	default:
 		fmt.Println("unsupported command")
 	}

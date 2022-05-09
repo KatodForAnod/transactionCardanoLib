@@ -24,6 +24,16 @@ func main() {
 	f := files.Files{}
 	f.Init(conf)
 
+	if !conf.UsingExistingPolicy {
+		p := cardanocli.Policy{}
+		p.Init(f, conf.ID)
+		err := p.GeneratePolicyFiles()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+
 	policyIdBytes, err := ioutil.ReadFile(conf.PolicyIDFile)
 	if err != nil {
 		log.Println(err)

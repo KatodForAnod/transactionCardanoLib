@@ -120,7 +120,6 @@ func (c *SendTokens) TransactionBuild(tokens []config.Token,
 		"--out-file", c.f.GetRawTransactionSendTokenFile())
 	stderr, _ = cmd.StderrPipe()
 
-	fmt.Println(cmd.String())
 	if err := cmd.Start(); err != nil {
 		log.Println(err)
 		return errorOutput, err

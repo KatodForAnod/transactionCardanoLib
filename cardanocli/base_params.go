@@ -15,4 +15,12 @@ type TransactionParams struct {
 	Receiver       string
 	ReceiverOutput string
 	SlotNumber     string
+	Nft            NftParams
+}
+
+type NftParams struct {
+	NftName       string
+	ImageIPFSHash string
+	MediaType     string
+	Description   string
 }

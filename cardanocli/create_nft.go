@@ -2,8 +2,11 @@ package cardanocli
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"transactionCardanoLib/config"
 	"transactionCardanoLib/files"
@@ -33,6 +36,27 @@ func (c *CreateNFT) SetProcessParams(processParams TransactionParams) {
 
 func (c *CreateNFT) SetFileParams(f files.Files) {
 	c.f = f
+}
+
+func (c *CreateNFT) CardanoQueryUtxo() (cliOutPut string, errorOutput []string, err error) {
+	var buf bytes.Buffer
+	cmd := exec.Command("cardano-cli", "query", "utxo",
+		"--address", c.base.PaymentAddr, "--testnet-magic", c.base.ID)
+	cmd.Stdout = &buf
+	stderr, _ := cmd.StderrPipe()
+
+	if err = cmd.Start(); err != nil {
+		log.Println(err)
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			errorOutput = append(errorOutput, scanner.Text())
+		}
+		return "", errorOutput, err
+	}
+
+	cmd.Wait()
+
+	return buf.String(), errorOutput, nil
 }
 
 func (c *CreateNFT) TransactionBuild(tokens []config.Token) (errorOutput []string, err error) {
@@ -126,4 +150,33 @@ func (c *CreateNFT) TransactionSubmit() (errorOutput []string, err error) {
 	}
 
 	return []string{}, nil
+}
+
+func (c *CreateNFT) CreateMetadata() error {
+	metaData, err := os.Create(c.f.GetMetadataAttrFile()) //TODO add new files for nft policy
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	defer metaData.Close()
+
+	policyIdBytes, err := ioutil.ReadFile(c.f.GetPolicyIDFile())
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	metaData.WriteString("{\n")
+	metaData.WriteString("  \"721\": {")
+	metaData.WriteString("  \"" + string(policyIdBytes) + "\": {")
+	metaData.WriteString("  \"image\":" + "[\"https://ipfs.io/ipfs/\", \"" + c.processParams.Nft.ImageIPFSHash + "\"],")
+	metaData.WriteString("  \"mediaType\":\"" + c.processParams.Nft.MediaType + "\",")
+	metaData.WriteString("  \"description\":\"" + c.processParams.Nft.Description + "\"")
+	metaData.WriteString("  }")
+	metaData.WriteString("  },")
+	metaData.WriteString("  \"version\":\"1.0\"")
+	metaData.WriteString("  }")
+	metaData.WriteString("  }")
+
+	return nil
 }

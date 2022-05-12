@@ -26,13 +26,12 @@ func (f *Frontend) switcherCreateNft(command int) error {
 		}
 		fmt.Println(cliOut)
 
-		var processParams cardanocli.TransactionParams
-		fmt.Println("input txHash")
-		fmt.Scan(&processParams.TxHash)
-		fmt.Println("input txIx")
-		fmt.Scan(&processParams.Txix)
-		fmt.Println("input amount")
-		fmt.Scan(&processParams.Funds)
+		processParams, _, err := cardanocli.Parse(cliOut)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
 		fmt.Println("input output")
 		fmt.Scan(&processParams.Output)
 		fmt.Println("input slotnumber")

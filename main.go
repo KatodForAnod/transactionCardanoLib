@@ -34,7 +34,7 @@ func main() {
 		}
 	}
 
-	policyIdBytes, err := ioutil.ReadFile(conf.PolicyIDFile)
+	policyIdBytes, err := ioutil.ReadFile(f.GetPolicyIDFile())
 	if err != nil {
 		log.Println(err)
 		return

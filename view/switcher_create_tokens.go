@@ -19,7 +19,7 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 		}
 		fmt.Println(cliOut)
 
-		processParams, _, err := cardanocli.Parse(cliOut)
+		processParams, tokens, err := cardanocli.Parse(cliOut)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -29,7 +29,7 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 		processParams.Output = "0"
 		f.createTokens.SetProcessParams(processParams)
 
-		errOutput, err = f.createTokens.TransactionBuild(f.conf.Token)
+		errOutput, err = f.createTokens.TransactionBuild(tokens, f.conf.Token)
 		if err != nil {
 			for _, s := range errOutput {
 				fmt.Println(s)
@@ -54,7 +54,7 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 			return err
 		}
 
-		errOutput, err = f.createTokens.TransactionBuild(f.conf.Token)
+		errOutput, err = f.createTokens.TransactionBuild(tokens, f.conf.Token)
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {

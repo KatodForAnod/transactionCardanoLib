@@ -61,8 +61,8 @@ func (c *CreateTokens) CardanoQueryUtxo() (cliOutPut string, errorOutput []strin
 }
 
 // TransactionBuild - tokenName1 and tokenName2 must be in base16
-func (c *CreateTokens) TransactionBuild(tokens []config.Token) (errorOutput []string, err error) {
-	if len(tokens) < 1 {
+func (c *CreateTokens) TransactionBuild(oldTokens []config.Token, newTokens []config.Token) (errorOutput []string, err error) {
+	if len(newTokens) < 1 || len(oldTokens) < 1 {
 		return errorOutput, errors.New("")
 	}
 
@@ -77,10 +77,17 @@ func (c *CreateTokens) TransactionBuild(tokens []config.Token) (errorOutput []st
 	}
 
 	txOut := fmt.Sprintf("%s+%s+", c.base.PaymentAddr, c.processParams.Output)
-	mint := fmt.Sprintf("%s %s.%s", tokens[0].TokenAmount, c.base.PolicyID, tokens[0].TokenName)
-	for i := 1; i < len(tokens); i++ {
+	var oldMint string
+	for i := 0; i < len(oldTokens); i++ {
+		oldMint += fmt.Sprintf("%s %s.%s + ",
+			oldTokens[i].TokenAmount, c.base.PolicyID, oldTokens[i].TokenName)
+	}
+	txOut += oldMint
+
+	mint := fmt.Sprintf("%s %s.%s", newTokens[0].TokenAmount, c.base.PolicyID, newTokens[0].TokenName)
+	for i := 1; i < len(newTokens); i++ {
 		mint += fmt.Sprintf(" + %s %s.%s",
-			tokens[i].TokenAmount, c.base.PolicyID, tokens[i].TokenName)
+			newTokens[i].TokenAmount, c.base.PolicyID, newTokens[i].TokenName)
 	}
 	txOut += mint
 
@@ -95,7 +102,7 @@ func (c *CreateTokens) TransactionBuild(tokens []config.Token) (errorOutput []st
 		log.Println(err)
 		return errorOutput, err
 	}
-
+	fmt.Println(cmd.String())
 	scanner := bufio.NewScanner(stderr)
 	for scanner.Scan() {
 		errorOutput = append(errorOutput, scanner.Text())

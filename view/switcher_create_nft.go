@@ -39,7 +39,7 @@ func (f *Frontend) switcherCreateNft(command int) error {
 
 		f.sendTokens.SetProcessParams(processParams)
 
-		errOutput, err = f.createTokens.TransactionBuild(f.conf.Token)
+		errOutput, err = f.createTokens.TransactionBuild(nil, f.conf.Token)
 		if err != nil {
 			for _, s := range errOutput {
 				fmt.Println(s)

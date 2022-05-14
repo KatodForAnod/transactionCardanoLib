@@ -29,14 +29,16 @@ func (f *Frontend) switcherCreateNft(command int) error {
 		if err != nil {
 			log.Println(err)
 			return err
+		} else if len(processParams) == 0 {
+			return errors.New("params not found")
 		}
 
 		fmt.Println("input output")
-		fmt.Scan(&processParams.Output)
+		fmt.Scan(&processParams[0].Output)
 		fmt.Println("input slotnumber")
-		fmt.Scan(&processParams.SlotNumber)
+		fmt.Scan(&processParams[0].SlotNumber)
 
-		f.sendTokens.SetProcessParams(processParams)
+		f.sendTokens.SetProcessParams(processParams[0])
 
 		errOutput, err = f.createTokens.TransactionBuild(nil, f.conf.Token)
 		if err != nil {

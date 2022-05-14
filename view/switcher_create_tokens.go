@@ -1,8 +1,10 @@
 package view
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"transactionCardanoLib/config"
 )
 
 func (f *Frontend) switcherCreateTokens(command int) error {
@@ -22,13 +24,20 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 		if err != nil {
 			log.Println(err)
 			return err
+		} else if len(processParams) == 0 {
+			return errors.New("params not found")
 		}
 
-		processParams.Fee = "300000"
-		processParams.Output = "0"
-		f.createTokens.SetProcessParams(processParams)
+		processParams[0].Fee = "300000"
+		processParams[0].Output = "0"
+		f.createTokens.SetProcessParams(processParams[0])
 
-		errOutput, err = f.createTokens.TransactionBuild(tokens, f.conf.Token)
+		var tokenTmp []config.Token
+		if len(tokens) > 0 {
+			tokenTmp = tokens[0]
+		}
+
+		errOutput, err = f.createTokens.TransactionBuild(tokenTmp, f.conf.Token)
 		if err != nil {
 			for _, s := range errOutput {
 				fmt.Println(s)
@@ -53,7 +62,7 @@ func (f *Frontend) switcherCreateTokens(command int) error {
 			return err
 		}
 
-		errOutput, err = f.createTokens.TransactionBuild(tokens, f.conf.Token)
+		errOutput, err = f.createTokens.TransactionBuild(tokens[0], f.conf.Token)
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {

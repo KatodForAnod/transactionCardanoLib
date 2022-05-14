@@ -1,6 +1,7 @@
 package view
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"transactionCardanoLib/config"
@@ -23,17 +24,19 @@ func (f *Frontend) switcherSendTokens(command int) error {
 		if err != nil {
 			log.Println(err)
 			return err
+		} else if len(processParams) == 0 || len(tokens) == 0 {
+			return errors.New("params not found")
 		}
 
-		processParams.Fee = "0"
-		processParams.Output = "0"
+		processParams[0].Fee = "0"
+		processParams[0].Output = "0"
 
 		fmt.Println("input receiver")
-		fmt.Scan(&processParams.Receiver)
+		fmt.Scan(&processParams[0].Receiver)
 		fmt.Println("input receiverOutput")
-		fmt.Scan(&processParams.ReceiverOutput)
+		fmt.Scan(&processParams[0].ReceiverOutput)
 
-		f.sendTokens.SetProcessParams(processParams)
+		f.sendTokens.SetProcessParams(processParams[0])
 
 		var sendToken config.Token
 		fmt.Println("input name of token to send")
@@ -41,7 +44,7 @@ func (f *Frontend) switcherSendTokens(command int) error {
 		fmt.Println("input amount of token to send")
 		fmt.Scan(&sendToken.TokenAmount)
 
-		errOutput, err = f.sendTokens.TransactionBuild(tokens, []config.Token{sendToken})
+		errOutput, err = f.sendTokens.TransactionBuild(tokens[0], []config.Token{sendToken})
 		if err != nil {
 			for _, s := range errOutput {
 				fmt.Println(s)
@@ -66,7 +69,7 @@ func (f *Frontend) switcherSendTokens(command int) error {
 			return err
 		}
 
-		errOutput, err = f.sendTokens.TransactionBuild(tokens, []config.Token{sendToken})
+		errOutput, err = f.sendTokens.TransactionBuild(tokens[0], []config.Token{sendToken})
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {

@@ -19,7 +19,7 @@ type TransactionContract interface {
 	TransactionSign() (errorOutput []string, err error)
 	TransactionSubmit() (errorOutput []string, err error)
 	CardanoQueryUtxo() (cliOutPut string, errorOutput []string, err error)
-	ParseUtxo(cliOutput string) (TransactionParams, []config.Token, error)
+	ParseUtxo(cliOutput string) ([]TransactionParams, [][]config.Token, error) // change output vars
 	SetBaseParams(base BaseTransactionParams)
 	SetProcessParams(processParams TransactionParams)
 	SetFileParams(f files.Files)
@@ -93,37 +93,43 @@ func (c *SuperTransactionClass) CalculateOutPut() error {
 	return nil
 }
 
-func (c *SuperTransactionClass) ParseUtxo(cliOutput string) (TransactionParams, []config.Token, error) {
+func (c *SuperTransactionClass) ParseUtxo(cliOutput string) ([]TransactionParams, [][]config.Token, error) {
 	cliOutputArr := strings.Split(cliOutput, "\n")
 	if len(cliOutputArr) < 3 {
-		return TransactionParams{}, nil, errors.New("error split")
+		return []TransactionParams{}, nil, errors.New("error split")
 	}
 
-	str := cliOutputArr[2]
-	vars := strings.Fields(str)
+	var paramsAllTxHash []TransactionParams
+	var tokensAllTxHash [][]config.Token
 
-	txHash := vars[0]
-	txIx := vars[1]
-	amountLovelace := vars[2]
+	for j := 2; j < len(cliOutputArr); j++ {
+		str := cliOutputArr[j]
+		vars := strings.Fields(str)
 
-	var tokens []config.Token
-	for i := 4; i < len(vars)-2; i += 3 {
-		policyAndTokenName := strings.Split(vars[i+2], ".")
-		tokenName := policyAndTokenName[1]
+		txHash := vars[0]
+		txIx := vars[1]
+		amountLovelace := vars[2]
 
-		token := config.Token{
-			TokenName:   tokenName,
-			TokenAmount: vars[i+1],
+		var tokens []config.Token
+		for i := 4; i < len(vars)-2; i += 3 {
+			policyAndTokenName := strings.Split(vars[i+2], ".")
+			tokenName := policyAndTokenName[1]
+
+			token := config.Token{
+				TokenName:   tokenName,
+				TokenAmount: vars[i+1],
+			}
+
+			tokens = append(tokens, token)
 		}
 
-		tokens = append(tokens, token)
-	}
-
-	return TransactionParams{
+		tokensAllTxHash = append(tokensAllTxHash, tokens)
+		paramsAllTxHash = append(paramsAllTxHash, TransactionParams{
 			TxHash: txHash,
 			Txix:   txIx,
 			Funds:  amountLovelace,
-		},
-		tokens,
-		nil
+		})
+	}
+
+	return paramsAllTxHash, tokensAllTxHash, nil
 }

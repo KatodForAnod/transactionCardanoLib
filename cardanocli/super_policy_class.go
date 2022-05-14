@@ -9,6 +9,11 @@ import (
 	"transactionCardanoLib/files"
 )
 
+type PolicyContract interface {
+	Init(f files.Files, id string)
+	GeneratePolicyFiles() error
+}
+
 type Policy struct {
 	f  files.Files
 	id string
@@ -16,9 +21,9 @@ type Policy struct {
 	policyID string
 }
 
-func (p *Policy) Init(f files.Files, id string) {
-	p.f = f
-	p.id = id
+func (c *Policy) Init(f files.Files, id string) {
+	c.f = f
+	c.id = id
 }
 
 func (c *Policy) generatePolicy() (err error) {

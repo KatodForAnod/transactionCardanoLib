@@ -42,7 +42,7 @@ func (f *Frontend) switcherSendTokens(command int) error {
 		fmt.Println("input amount of token to send")
 		fmt.Scan(&sendToken.TokenAmount)
 
-		errOutput, err = f.sendTokens.TransactionBuild(tokens, sendToken)
+		errOutput, err = f.sendTokens.TransactionBuild(tokens, []config.Token{sendToken})
 		if err != nil {
 			for _, s := range errOutput {
 				fmt.Println(s)
@@ -67,7 +67,7 @@ func (f *Frontend) switcherSendTokens(command int) error {
 			return err
 		}
 
-		errOutput, err = f.sendTokens.TransactionBuild(tokens, sendToken)
+		errOutput, err = f.sendTokens.TransactionBuild(tokens, []config.Token{sendToken})
 		if err != nil {
 			log.Println(err)
 			for _, s := range errOutput {

@@ -61,7 +61,7 @@ func (c *SendTokens) CardanoQueryUtxo() (cliOutPut string, errorOutput []string,
 }
 
 func (c *SendTokens) TransactionBuild(tokens []config.Token,
-	sendToken config.Token) (errorOutput []string, err error) {
+	sendToken []config.Token) (errorOutput []string, err error) {
 	var copyTokens []config.Token
 	for _, token := range tokens {
 		copyTokens = append(copyTokens, token)
@@ -78,14 +78,14 @@ func (c *SendTokens) TransactionBuild(tokens []config.Token,
 	}
 
 	for i, token := range copyTokens {
-		if token.TokenName == sendToken.TokenName {
+		if token.TokenName == sendToken[0].TokenName {
 			tokenAll, err := strconv.ParseInt(token.TokenAmount, 10, 64)
 			if err != nil {
 				log.Println(err)
 				return errorOutput, err
 			}
 
-			tokenSendAmount, err := strconv.ParseInt(sendToken.TokenAmount, 10, 64)
+			tokenSendAmount, err := strconv.ParseInt(sendToken[0].TokenAmount, 10, 64)
 			if err != nil {
 				log.Println(err)
 				return errorOutput, err
@@ -100,7 +100,7 @@ func (c *SendTokens) TransactionBuild(tokens []config.Token,
 	}
 
 	txOut := fmt.Sprintf("%s+%s+", c.processParams.Receiver, c.processParams.ReceiverOutput)
-	txOut += fmt.Sprintf("%s %s.%s", sendToken.TokenAmount, c.base.PolicyID, sendToken.TokenName)
+	txOut += fmt.Sprintf("%s %s.%s", sendToken[0].TokenAmount, c.base.PolicyID, sendToken[0].TokenName)
 
 	txOut2 := fmt.Sprintf("%s+%s", c.base.PaymentAddr,
 		c.processParams.Output)

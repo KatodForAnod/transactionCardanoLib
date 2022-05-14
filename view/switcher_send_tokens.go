@@ -3,7 +3,6 @@ package view
 import (
 	"fmt"
 	"log"
-	"transactionCardanoLib/cardanocli"
 	"transactionCardanoLib/config"
 )
 
@@ -20,7 +19,7 @@ func (f *Frontend) switcherSendTokens(command int) error {
 		}
 		fmt.Println(cliOut)
 
-		processParams, tokens, err := cardanocli.Parse(cliOut)
+		processParams, tokens, err := f.sendTokens.ParseUtxo(cliOut)
 		if err != nil {
 			log.Println(err)
 			return err

@@ -1,11 +1,6 @@
 package cardanocli
 
-import (
-	"errors"
-	"strings"
-	"transactionCardanoLib/config"
-)
-
+/*
 func Parse(cliOutput string) (TransactionParams, []config.Token, error) {
 	cliOutputArr := strings.Split(cliOutput, "\n")
 	if len(cliOutputArr) < 3 {
@@ -40,3 +35,4 @@ func Parse(cliOutput string) (TransactionParams, []config.Token, error) {
 		tokens,
 		nil
 }
+*/

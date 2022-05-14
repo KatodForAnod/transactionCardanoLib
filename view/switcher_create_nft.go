@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"transactionCardanoLib/cardanocli"
 )
 
 func (f *Frontend) switcherCreateNft(command int) error {
@@ -26,7 +25,7 @@ func (f *Frontend) switcherCreateNft(command int) error {
 		}
 		fmt.Println(cliOut)
 
-		processParams, _, err := cardanocli.Parse(cliOut)
+		processParams, _, err := f.sendTokens.ParseUtxo(cliOut)
 		if err != nil {
 			log.Println(err)
 			return err

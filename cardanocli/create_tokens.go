@@ -10,54 +10,10 @@ import (
 	"strconv"
 	"strings"
 	"transactionCardanoLib/config"
-	"transactionCardanoLib/files"
 )
 
 type CreateTokens struct {
-	base          BaseTransactionParams
-	processParams TransactionParams
-	f             files.Files
-}
-
-func (c *CreateTokens) Init(base BaseTransactionParams,
-	processParams TransactionParams,
-	f files.Files) {
-	c.base = base
-	c.f = f
-	c.processParams = processParams
-}
-
-func (c *CreateTokens) SetBaseParams(base BaseTransactionParams) {
-	c.base = base
-}
-
-func (c *CreateTokens) SetProcessParams(processParams TransactionParams) {
-	c.processParams = processParams
-}
-
-func (c *CreateTokens) SetFileParams(f files.Files) {
-	c.f = f
-}
-
-func (c *CreateTokens) CardanoQueryUtxo() (cliOutPut string, errorOutput []string, err error) {
-	var buf bytes.Buffer
-	cmd := exec.Command("cardano-cli", "query", "utxo",
-		"--address", c.base.PaymentAddr, "--testnet-magic", c.base.ID)
-	cmd.Stdout = &buf
-	stderr, _ := cmd.StderrPipe()
-
-	if err = cmd.Start(); err != nil {
-		log.Println(err)
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			errorOutput = append(errorOutput, scanner.Text())
-		}
-		return "", errorOutput, err
-	}
-
-	cmd.Wait()
-
-	return buf.String(), errorOutput, nil
+	SuperTransactionClass
 }
 
 // TransactionBuild - tokenName1 and tokenName2 must be in base16

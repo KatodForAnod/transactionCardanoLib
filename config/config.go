@@ -12,6 +12,9 @@ type Config struct {
 	PaymentSKeyFilePath string  `json:"payment_s_key_file_path"` //3
 	PaymentVKeyFilePath string  `json:"payment_v_key_file_path"` //4
 
+	SlotNft  string `json:"slot_nft"`  //5
+	IpfsHash string `json:"ipfs_hash"` //6
+
 	UsingExistingPolicy        bool   `json:"using_existing_policy"`
 	PolicyIDFile               string `json:"policy_id"`
 	PolicyScriptFilePath       string `json:"policy_script_file_path"`

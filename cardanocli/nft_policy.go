@@ -17,7 +17,7 @@ type NftPolicy struct {
 
 func (commPolicy *NftPolicy) Init(f files.Files, conf config.Config) {
 	commPolicy.Policy.Init(f, conf)
-	commPolicy.slot = "0" //TODO
+	commPolicy.slot = conf.SlotNft
 }
 
 func (commPolicy *NftPolicy) generatePolicyScript() error {

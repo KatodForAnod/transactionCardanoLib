@@ -24,10 +24,10 @@ func main() {
 	f := files.Files{}
 	f.Init(conf)
 
+	var policy cardanocli.Policy
 	if !conf.UsingExistingPolicy {
-		p := cardanocli.Policy{}
-		p.Init(f, conf.ID)
-		err := p.GeneratePolicyFiles()
+		policy.Init(f, conf)
+		err := policy.GeneratePolicyFiles()
 		if err != nil {
 			log.Println(err)
 			return
@@ -51,9 +51,6 @@ func main() {
 
 	sendTokens := cardanocli.SendTokens{}
 	sendTokens.Init(baseParams, cardanocli.TransactionParams{}, f)
-
-	policy := cardanocli.Policy{}
-	policy.Init(f, conf.ID)
 
 	front := view.Frontend{}
 	front.SetConfAndCardanoLib(conf, createTokens, sendTokens, policy)

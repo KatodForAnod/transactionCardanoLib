@@ -6,21 +6,22 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"transactionCardanoLib/config"
+	"transactionCardanoLib/files"
 )
 
 type NftPolicy struct {
 	Policy
+	slot string
 }
 
-func (commPolicy *NftPolicy) generatePolicy() error {
-	if err := os.MkdirAll("./"+commPolicy.f.GetPolicyDirName(), os.ModePerm); err != nil { //TODO add new files for nft policy
-		log.Println(err)
-		return err
-	}
+func (commPolicy *NftPolicy) Init(f files.Files, conf config.Config) {
+	commPolicy.Policy.Init(f, conf)
+	commPolicy.slot = "0" //TODO
+}
 
-	err := exec.Command("cardano-cli", "address", "key-gen", "--verification-key-file",
-		commPolicy.f.GetPolicyVerificationkeyFile(), "--signing-key-file", commPolicy.f.GetPolicySigningKeyFile()).Run()
-	if err != nil {
+func (commPolicy *NftPolicy) generatePolicyScript() error {
+	if err := os.MkdirAll("./"+commPolicy.f.GetPolicyDirName(), os.ModePerm); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -37,6 +38,11 @@ func (commPolicy *NftPolicy) generatePolicy() error {
 	policyScript.WriteString("  \"scripts\":")
 	policyScript.WriteString("  [")
 	policyScript.WriteString("   {")
+	policyScript.WriteString("  \"type\": \"before\",\n")
+	policyScript.WriteString("  \"slot\":" + commPolicy.slot + ",\n")
+	policyScript.WriteString("},")
+	policyScript.WriteString("   {")
+	policyScript.WriteString("  \"type\": \"sig\",\n")
 	policyScript.WriteString("  \"keyHash\": \"")
 
 	var buf bytes.Buffer
@@ -49,9 +55,7 @@ func (commPolicy *NftPolicy) generatePolicy() error {
 	cmd.Wait()
 
 	keyHash := strings.ReplaceAll(buf.String(), "\n", "")
-	policyScript.WriteString(keyHash + "\",\n")
-	policyScript.WriteString("  \"type\": \"sig\"\n")
-	policyScript.WriteString("}")
+	policyScript.WriteString(keyHash + "\"\n")
 	policyScript.WriteString("}")
 	policyScript.WriteString("]")
 	policyScript.WriteString("}")
@@ -68,7 +72,7 @@ func (commPolicy *NftPolicy) generatePolicyID() error {
 
 	var buf bytes.Buffer
 	cmd := exec.Command("cardano-cli", "transaction", "policyid",
-		"--script-file", "./"+commPolicy.f.GetPolicyScriptFile()) //TODO add new files for nft policy
+		"--script-file", "./"+commPolicy.f.GetPolicyScriptFile())
 	cmd.Stdout = &buf
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
@@ -84,13 +88,13 @@ func (commPolicy *NftPolicy) generatePolicyID() error {
 }
 
 func (commPolicy *NftPolicy) GeneratePolicyFiles() error {
-	err := commPolicy.generateProtocol()
+	err := commPolicy.generateProtocolParameters()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = commPolicy.generatePolicy()
+	err = commPolicy.generatePolicyScript()
 	if err != nil {
 		log.Println(err)
 		return err

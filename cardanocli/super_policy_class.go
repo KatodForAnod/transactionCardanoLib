@@ -26,7 +26,7 @@ func (c *Policy) Init(f files.Files, id string) {
 	c.id = id
 }
 
-func (c *Policy) generatePolicy() (err error) {
+func (c *Policy) generatePolicyScript() (err error) {
 	if err = os.MkdirAll("./"+c.f.GetPolicyDirName(), os.ModePerm); err != nil {
 		log.Println(err)
 		return err
@@ -91,7 +91,7 @@ func (c *Policy) generatePolicyID() error {
 	return nil
 }
 
-func (c *Policy) generateProtocol() error {
+func (c *Policy) generateProtocolParameters() error {
 	err := exec.Command("cardano-cli", "query", "protocol-parameters",
 		"--testnet-magic", c.id, "--out-file", c.f.GetProtocolParametersFile()).Run()
 	if err != nil {
@@ -103,13 +103,13 @@ func (c *Policy) generateProtocol() error {
 }
 
 func (c *Policy) GeneratePolicyFiles() error {
-	err := c.generateProtocol()
+	err := c.generateProtocolParameters()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = c.generatePolicy()
+	err = c.generatePolicyScript()
 	if err != nil {
 		log.Println(err)
 		return err

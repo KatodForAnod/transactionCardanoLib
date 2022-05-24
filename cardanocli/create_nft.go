@@ -2,7 +2,6 @@ package cardanocli
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,9 +12,7 @@ import (
 )
 
 type CreateNFT struct {
-	base          BaseTransactionParams
-	processParams TransactionParams
-	f             files.Files
+	SuperTransactionClass
 }
 
 func (c *CreateNFT) Init(base BaseTransactionParams,
@@ -24,39 +21,6 @@ func (c *CreateNFT) Init(base BaseTransactionParams,
 	c.base = base
 	c.f = f
 	c.processParams = processParams
-}
-
-func (c *CreateNFT) SetBaseParams(base BaseTransactionParams) {
-	c.base = base
-}
-
-func (c *CreateNFT) SetProcessParams(processParams TransactionParams) {
-	c.processParams = processParams
-}
-
-func (c *CreateNFT) SetFileParams(f files.Files) {
-	c.f = f
-}
-
-func (c *CreateNFT) CardanoQueryUtxo() (cliOutPut string, errorOutput []string, err error) {
-	var buf bytes.Buffer
-	cmd := exec.Command("cardano-cli", "query", "utxo",
-		"--address", c.base.PaymentAddr, "--testnet-magic", c.base.ID)
-	cmd.Stdout = &buf
-	stderr, _ := cmd.StderrPipe()
-
-	if err = cmd.Start(); err != nil {
-		log.Println(err)
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			errorOutput = append(errorOutput, scanner.Text())
-		}
-		return "", errorOutput, err
-	}
-
-	cmd.Wait()
-
-	return buf.String(), errorOutput, nil
 }
 
 func (c *CreateNFT) TransactionBuild(tokens []config.Token) (errorOutput []string, err error) {
